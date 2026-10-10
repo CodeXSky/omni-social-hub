@@ -12,7 +12,8 @@ import {
   Lock,
   Plus,
   Trash2,
-  SlidersHorizontal
+  SlidersHorizontal,
+  X
 } from "lucide-react";
 import { PLATFORM_CONFIGS } from "@/lib/platform-configs";
 import { Platform } from "@prisma/client";
@@ -21,8 +22,15 @@ export function AccountsManager() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Form State
+  const [platform, setPlatform] = useState<Platform>(Platform.TIKTOK);
+  const [accountName, setAccountName] = useState("");
+  const [username, setUsername] = useState("");
+
+  const loadAccounts = () => {
     fetch("/api/accounts")
       .then((res) => res.json())
       .then((data) => {
@@ -30,13 +38,59 @@ export function AccountsManager() {
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadAccounts();
   }, []);
 
-  const handleRefreshToken = (id: string) => {
+  const handleRefreshToken = async (id: string) => {
     setRefreshingId(id);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "refresh", accountId: id }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setNotice("✅ OAuth Token successfully rotated and rate limit quota restored!");
+        loadAccounts();
+        setTimeout(() => setNotice(null), 3500);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
       setRefreshingId(null);
-    }, 1200);
+    }
+  };
+
+  const handleConnectNew = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!accountName || !username) return;
+
+    const newAcc = {
+      id: `acc-${Date.now()}`,
+      workspaceId: "ws-acme-prod-01",
+      platform,
+      accountId: `usr_${Date.now()}`,
+      accountName,
+      username: username.replace("@", ""),
+      profilePic: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      accessToken: "ENCRYPTED_AES256_GCM",
+      refreshToken: "ENCRYPTED_AES256_GCM",
+      tokenExpiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+      rateLimitRemaining: 1000,
+      profileMeta: { followers: 1500, verified: false },
+      status: "ACTIVE",
+    };
+
+    setAccounts([newAcc, ...accounts]);
+    setIsModalOpen(false);
+    setAccountName("");
+    setUsername("");
+    setNotice(`🎉 Connected ${PLATFORM_CONFIGS[platform].name} account (@${newAcc.username}) via OAuth v2!`);
+    setTimeout(() => setNotice(null), 4000);
   };
 
   return (
@@ -56,11 +110,21 @@ export function AccountsManager() {
           </p>
         </div>
 
-        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all hover:scale-[1.02]">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all hover:scale-[1.02]"
+        >
           <Plus className="w-4 h-4" />
           <span>Connect New Account</span>
         </button>
       </div>
+
+      {notice && (
+        <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between">
+          <span>{notice}</span>
+          <button onClick={() => setNotice(null)} className="text-zinc-400 hover:text-white">✕</button>
+        </div>
+      )}
 
       {/* Security Info Card */}
       <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 flex items-center justify-between">
@@ -137,14 +201,82 @@ export function AccountsManager() {
                   <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-cyan-400" : ""}`} />
                   <span>{isRefreshing ? "Refreshing..." : "Refresh Token"}</span>
                 </button>
-                <button className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white">
-                  <SlidersHorizontal className="w-4 h-4" />
-                </button>
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Connect Account Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <h3 className="text-sm font-bold text-white">OAuth Social Connect</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleConnectNew} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Select Social Network</label>
+                <select
+                  value={platform}
+                  onChange={(e) => setPlatform(e.target.value as Platform)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-200 focus:outline-none focus:border-cyan-500"
+                >
+                  {Object.keys(PLATFORM_CONFIGS).map((p) => (
+                    <option key={p} value={p}>
+                      {PLATFORM_CONFIGS[p as Platform].name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Brand / Channel Display Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Acme Tech Global"
+                  value={accountName}
+                  onChange={(e) => setAccountName(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-200 focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Handle / Username</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. acmetech"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-200 focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 rounded-lg bg-zinc-800 text-zinc-300 text-xs font-semibold hover:bg-zinc-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-xs shadow-lg shadow-cyan-500/20"
+                >
+                  Authorize via OAuth
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

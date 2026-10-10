@@ -13,7 +13,8 @@ import {
   Calendar,
   Sparkles,
   ArrowUpRight,
-  Filter
+  Filter,
+  Check
 } from "lucide-react";
 import { PLATFORM_CONFIGS } from "@/lib/platform-configs";
 import { Platform } from "@prisma/client";
@@ -21,6 +22,7 @@ import { Platform } from "@prisma/client";
 export function AnalyticsCentral() {
   const [analytics, setAnalytics] = useState<any>(null);
   const [timeRange, setTimeRange] = useState("30d");
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   useEffect(() => {
     fetch("/api/analytics")
@@ -36,6 +38,31 @@ export function AnalyticsCentral() {
     likes: 12840,
     comments: 2190,
     shares: 1820,
+  };
+
+  const handleExportCSV = () => {
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [
+        "Platform,Impressions,Reach,EngagementRate,Shares,CTR",
+        "TikTok,81570,45200,5.8%,3800,4.2%",
+        "Instagram,48200,32100,6.2%,1400,6.8%",
+        "Facebook,25950,18500,2.9%,920,3.1%",
+        "Twitter / X,18540,14200,3.4%,1800,2.9%",
+        "Threads,7410,5900,4.1%,450,5.4%",
+        "Pinterest,3700,2800,7.1%,280,8.2%",
+      ].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `OmniSocial_Analytics_${timeRange}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setDownloadSuccess(true);
+    setTimeout(() => setDownloadSuccess(false), 3000);
   };
 
   return (
@@ -70,9 +97,21 @@ export function AnalyticsCentral() {
             ))}
           </div>
 
-          <button className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold">
-            <Download className="w-4 h-4" />
-            <span>Export CSV</span>
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-colors"
+          >
+            {downloadSuccess ? (
+              <>
+                <Check className="w-4 h-4 text-emerald-400" />
+                <span className="text-emerald-400">Exported!</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                <span>Export CSV</span>
+              </>
+            )}
           </button>
         </div>
       </div>

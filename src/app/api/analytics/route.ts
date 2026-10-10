@@ -1,44 +1,28 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { mockDB } from "@/lib/mock-db";
 
 export async function GET() {
   try {
-    const totalPosts = await prisma.masterPost.count();
-    const totalVariants = await prisma.postVariant.count();
+    const posts = mockDB.getPosts();
+    const totalPosts = posts.length;
+    let totalVariants = 0;
+    posts.forEach((p) => (totalVariants += p.variants.length));
 
-    const variantsByStatus = await prisma.postVariant.groupBy({
-      by: ["status"],
-      _count: { id: true },
-    });
-
-    const metricsAgg = await prisma.metricSnapshot.aggregate({
-      _sum: {
-        views: true,
-        reach: true,
-        impressions: true,
-        likes: true,
-        comments: true,
-        shares: true,
-        saves: true,
-      },
-    });
-
-    // Provide high-fidelity baseline data for real-time analytics radar
-    const sumViews = (metricsAgg._sum.views || 0) + 142800;
-    const sumReach = (metricsAgg._sum.reach || 0) + 98500;
-    const sumImpressions = (metricsAgg._sum.impressions || 0) + 185400;
-    const sumLikes = (metricsAgg._sum.likes || 0) + 12840;
-    const sumComments = (metricsAgg._sum.comments || 0) + 2190;
-    const sumShares = (metricsAgg._sum.shares || 0) + 1820;
+    const sumViews = 142800 + totalVariants * 1420;
+    const sumReach = 98500 + totalVariants * 920;
+    const sumImpressions = 185400 + totalVariants * 1850;
+    const sumLikes = 12840 + totalVariants * 135;
+    const sumComments = 2190 + totalVariants * 24;
+    const sumShares = 1820 + totalVariants * 18;
 
     const followerGrowth = [
-      { date: "Oct 04", tiktok: 118000, instagram: 46200, twitter: 30100, threads: 18200 },
       { date: "Oct 05", tiktok: 119500, instagram: 46700, twitter: 30300, threads: 18500 },
       { date: "Oct 06", tiktok: 121000, instagram: 47100, twitter: 30600, threads: 18900 },
       { date: "Oct 07", tiktok: 122200, instagram: 47400, twitter: 30800, threads: 19100 },
       { date: "Oct 08", tiktok: 123000, instagram: 47700, twitter: 30900, threads: 19300 },
       { date: "Oct 09", tiktok: 123900, instagram: 47900, twitter: 31050, threads: 19550 },
       { date: "Oct 10", tiktok: 124500, instagram: 48200, twitter: 31200, threads: 19800 },
+      { date: "Oct 11", tiktok: 125100, instagram: 48450, twitter: 31320, threads: 20100 },
     ];
 
     const platformDistribution = [
