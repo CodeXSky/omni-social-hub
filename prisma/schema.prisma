@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Platform {
+  FACEBOOK
+  INSTAGRAM
+  THREADS
+  TIKTOK
+  TWITTER
+  PINTEREST
+}
+
+enum PostStatus {
+  DRAFT
+  ADAPTING
+  QUEUED
+  PARTIALLY_PUBLISHED
+  PUBLISHED
+  FAILED
+}
+
+enum VariantStatus {
+  PENDING
+  QUEUED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  name         String?
+  avatarUrl    String?
+  role         String        @default("MEMBER")
+  workspaces   WorkspaceMember[]
+  masterPosts  MasterPost[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Workspace {
+  id             String           @id @default(uuid())
+  name           String
+  slug           String           @unique
+  members        WorkspaceMember[]
+  socialAccounts SocialAccount[]
+  masterPosts    MasterPost[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model WorkspaceMember {
+  id          String     @id @default(uuid())
+  workspaceId String
+  userId      String
+  role        String     @default("ADMIN")
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+}
+
+model SocialAccount {
+  id              String            @id @default(uuid())
+  workspaceId     String
+  platform        Platform
+  accountId       String
+  accountName     String
+  username        String
+  profilePic      String?
+  accessToken     String            // Encrypted AES-256-GCM
+  refreshToken    String?           // Encrypted AES-256-GCM
+  tokenExpiresAt  DateTime?
+  rateLimitLimit  Int               @default(100)
+  rateLimitRemaining Int            @default(100)
+  rateLimitResetAt DateTime?
+  profileMeta     Json?             // Platform specific metadata (follower count, page id, board id)
+  status          String            @default("ACTIVE") // ACTIVE, EXPIRED, REVOKED
+  workspace       Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  variants        PostVariant[]
+  metrics         MetricSnapshot[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([workspaceId, platform, accountId])
+}
+
+model MasterPost {
+  id           String        @id @default(uuid())
+  workspaceId  String
+  authorId     String
+  title        String?
+  rawCaption   String
+  rawMediaUrls String[]
+  scheduledAt  DateTime?
+  publishedAt  DateTime?
+  status       PostStatus    @default(DRAFT)
+  tags         String[]
+  globalSettings Json?       // e.g. cross-posting settings, default link, first-comment
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  author       User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  variants     PostVariant[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model PostVariant {
+  id                     String         @id @default(uuid())
+  masterPostId           String
+  socialAccountId        String?
+  platform               Platform
+  adaptedContent         String
+  mediaUrls              String[]
+  platformSpecificPayload Json?         // e.g. TikTok sound/title, X tweet thread, Pinterest boardId/link
+  status                 VariantStatus  @default(PENDING)
+  externalPostId         String?        // ID returned from official API
+  errorLog               String?
+  publishedAt            DateTime?
+  masterPost             MasterPost     @relation(fields: [masterPostId], references: [id], onDelete: Cascade)
+  socialAccount          SocialAccount? @relation(fields: [socialAccountId], references: [id], onDelete: SetNull)
+  metrics                MetricSnapshot[]
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+
+  @@unique([masterPostId, platform])
+}
+
+model MetricSnapshot {
+  id              String         @id @default(uuid())
+  postVariantId   String?
+  socialAccountId String?
+  views           Int            @default(0)
+  reach           Int            @default(0)
+  impressions     Int            @default(0)
+  likes           Int            @default(0)
+  comments        Int            @default(0)
+  shares          Int            @default(0)
+  saves           Int            @default(0)
+  clicks          Int            @default(0)
+  recordedAt      DateTime       @default(now())
+  postVariant     PostVariant?   @relation(fields: [postVariantId], references: [id], onDelete: Cascade)
+  socialAccount   SocialAccount? @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
+
+  @@index([postVariantId, recordedAt])
+  @@index([socialAccountId, recordedAt])
+}
