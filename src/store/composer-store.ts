@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Platform } from "@prisma/client";
+import { parseGoogleDriveUrl } from "@/lib/gdrive-resolver";
 
 export interface VariantDraft {
   platform: Platform;
@@ -15,11 +16,17 @@ interface ComposerState {
   masterTitle: string;
   masterCaption: string;
   masterMediaUrls: string[];
+  googleDriveVideoUrl: string;
+  isGoogleDriveConverted: boolean;
   scheduledAt: string | null;
   tone: "engaging" | "professional" | "viral_edgy" | "educational" | "casual";
   selectedPlatforms: Platform[];
   affiliateLink: string;
   affiliateProductName: string;
+
+  // Real-time trending context
+  currentTrendingTopic: string;
+  trendingUrgency: string;
 
   // Variant states
   activeVariantTab: Platform;
@@ -31,12 +38,15 @@ interface ComposerState {
   setMasterTitle: (title: string) => void;
   setMasterCaption: (caption: string) => void;
   setMasterMediaUrls: (urls: string[]) => void;
+  setGoogleDriveVideoUrl: (url: string) => void;
   addMediaUrl: (url: string) => void;
   removeMediaUrl: (index: number) => void;
   setScheduledAt: (date: string | null) => void;
   setTone: (tone: any) => void;
   setAffiliateLink: (link: string) => void;
   setAffiliateProductName: (name: string) => void;
+  setCurrentTrendingTopic: (topic: string) => void;
+  setTrendingUrgency: (urgency: string) => void;
   togglePlatform: (platform: Platform) => void;
   setActiveVariantTab: (platform: Platform) => void;
   updateVariant: (platform: Platform, patch: Partial<VariantDraft>) => void;
@@ -57,7 +67,9 @@ const ALL_PLATFORMS: Platform[] = [
 ];
 
 const INITIAL_MASTER_CAPTION =
-  "We just rolled out the all-new OmniSocial Hub 2.0 with instant cross-platform AI adaptation! Schedule to YouTube, TikTok, Instagram, X, Threads, Facebook, and Pinterest in one click. Try the future of social management today.";
+  "We just rolled out the all-new OmniSocial Hub 2.0 with instant cross-platform AI adaptation and Google Drive video stream integration! Schedule to YouTube Shorts, TikTok, Instagram Reels, Facebook, and X in one click.";
+
+const DEFAULT_GDRIVE_SAMPLE = "https://drive.google.com/file/d/1A2B3C4D5E6F7G8H9I0J_SAMPLE_VIDEO/view?usp=sharing";
 
 const makeDefaultVariants = (caption: string, mediaUrls: string[]): Record<Platform, VariantDraft> => {
   const map = {} as Record<Platform, VariantDraft>;
@@ -65,7 +77,7 @@ const makeDefaultVariants = (caption: string, mediaUrls: string[]): Record<Platf
     map[p] = {
       platform: p,
       caption: caption,
-      hashtags: ["#SocialMedia", "#OmniChannel", "#Productivity", "#Affiliate"],
+      hashtags: ["#SocialMedia", "#OmniChannel", "#Productivity", "#Shorts", "#Affiliate"],
       mediaUrls: [...mediaUrls],
       options: {},
       isManuallyEdited: false,
@@ -75,16 +87,20 @@ const makeDefaultVariants = (caption: string, mediaUrls: string[]): Record<Platf
 };
 
 export const useComposerStore = create<ComposerState>((set, get) => ({
-  masterTitle: "OmniSocial Hub 2.0 Launch Announcement",
+  masterTitle: "OmniSocial Hub 2.0 Launch & Video Walkthrough",
   masterCaption: INITIAL_MASTER_CAPTION,
   masterMediaUrls: [
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
   ],
+  googleDriveVideoUrl: DEFAULT_GDRIVE_SAMPLE,
+  isGoogleDriveConverted: true,
   scheduledAt: null,
   tone: "viral_edgy",
   selectedPlatforms: [...ALL_PLATFORMS],
   affiliateLink: "https://omnisocial.io/ref/vip-partner",
   affiliateProductName: "OmniSocial Hub Pro",
+  currentTrendingTopic: "Autonomous AI Agents & Omni-Channel Automation",
+  trendingUrgency: "EXPLODING 🔥",
   activeVariantTab: Platform.YOUTUBE,
   variants: makeDefaultVariants(INITIAL_MASTER_CAPTION, [
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
@@ -98,43 +114,38 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
     const currentVariants = get().variants;
     const updated = { ...currentVariants };
     for (const p of ALL_PLATFORMS) {
-      if (!updated[p]?.isManuallyEdited) {
-        if (updated[p]) {
-          updated[p] = { ...updated[p], caption: masterCaption };
-        }
+      if (!updated[p]?.isManuallyEdited && updated[p]) {
+        updated[p] = { ...updated[p], caption: masterCaption };
       }
     }
     set({ variants: updated });
   },
   setMasterMediaUrls: (masterMediaUrls) => set({ masterMediaUrls }),
+  setGoogleDriveVideoUrl: (googleDriveVideoUrl) => {
+    const parsed = parseGoogleDriveUrl(googleDriveVideoUrl);
+    set({ 
+      googleDriveVideoUrl,
+      isGoogleDriveConverted: parsed.isGoogleDrive
+    });
+    if (parsed.isGoogleDrive) {
+      const nextMedia = [parsed.directStreamUrl, ...get().masterMediaUrls.filter(u => !u.includes("drive.google.com"))];
+      set({ masterMediaUrls: nextMedia });
+    }
+  },
   addMediaUrl: (url) => {
     const next = [...get().masterMediaUrls, url];
     set({ masterMediaUrls: next });
-    const currentVariants = get().variants;
-    const updated = { ...currentVariants };
-    for (const p of ALL_PLATFORMS) {
-      if (!updated[p]?.isManuallyEdited && updated[p]) {
-        updated[p] = { ...updated[p], mediaUrls: next };
-      }
-    }
-    set({ variants: updated });
   },
   removeMediaUrl: (index) => {
     const next = get().masterMediaUrls.filter((_, i) => i !== index);
     set({ masterMediaUrls: next });
-    const currentVariants = get().variants;
-    const updated = { ...currentVariants };
-    for (const p of ALL_PLATFORMS) {
-      if (!updated[p]?.isManuallyEdited && updated[p]) {
-        updated[p] = { ...updated[p], mediaUrls: next };
-      }
-    }
-    set({ variants: updated });
   },
   setScheduledAt: (scheduledAt) => set({ scheduledAt }),
   setTone: (tone) => set({ tone }),
   setAffiliateLink: (affiliateLink) => set({ affiliateLink }),
   setAffiliateProductName: (affiliateProductName) => set({ affiliateProductName }),
+  setCurrentTrendingTopic: (currentTrendingTopic) => set({ currentTrendingTopic }),
+  setTrendingUrgency: (trendingUrgency) => set({ trendingUrgency }),
   togglePlatform: (platform) => {
     const current = get().selectedPlatforms;
     if (current.includes(platform)) {
@@ -174,6 +185,7 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
           caption: (val as any).caption,
           hashtags: (val as any).hashtags || [],
           options: (val as any).metadata || {},
+          mediaUrls: (val as any).videoStreamUrl ? [(val as any).videoStreamUrl] : next[p].mediaUrls,
           isManuallyEdited: false,
         };
       }

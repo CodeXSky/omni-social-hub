@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useComposerStore } from "@/store/composer-store";
 import { PLATFORM_CONFIGS } from "@/lib/platform-configs";
 import { DevicePreview } from "@/components/composer/DevicePreview";
+import { REALTIME_TRENDING_FEEDS } from "@/lib/trending-engine";
 import { Platform } from "@prisma/client";
 import {
   Sparkles,
@@ -22,7 +23,12 @@ import {
   ChevronRight,
   ShoppingBag,
   Tag,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Flame,
+  HardDrive,
+  Film,
+  Zap,
+  Check
 } from "lucide-react";
 
 export function ComposerStudio() {
@@ -32,6 +38,9 @@ export function ComposerStudio() {
     masterCaption,
     setMasterCaption,
     masterMediaUrls,
+    googleDriveVideoUrl,
+    setGoogleDriveVideoUrl,
+    isGoogleDriveConverted,
     addMediaUrl,
     removeMediaUrl,
     scheduledAt,
@@ -42,6 +51,10 @@ export function ComposerStudio() {
     setAffiliateLink,
     affiliateProductName,
     setAffiliateProductName,
+    currentTrendingTopic,
+    setCurrentTrendingTopic,
+    trendingUrgency,
+    setTrendingUrgency,
     selectedPlatforms,
     togglePlatform,
     activeVariantTab,
@@ -58,7 +71,7 @@ export function ComposerStudio() {
   const [newMediaInput, setNewMediaInput] = useState("");
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
-  // Trigger AI Multi-Channel Adaptation with Affiliate Injection
+  // Trigger AI Multi-Channel Adaptation with Trending & Google Drive Video
   const handleAdaptWithAI = async () => {
     try {
       setIsAdapting(true);
@@ -69,15 +82,23 @@ export function ComposerStudio() {
           masterCaption,
           targetPlatforms: selectedPlatforms,
           tone,
+          niche: currentTrendingTopic,
           affiliateLink,
           affiliateProductName,
+          googleDriveUrl: googleDriveVideoUrl,
         }),
       });
       const data = await res.json();
       if (data.success) {
         setBulkVariants(data.variants);
-        setSuccessBanner("✨ AI tailored native captions and affiliate disclosures across all active platforms!");
-        setTimeout(() => setSuccessBanner(null), 4000);
+        if (data.trendingContext) {
+          setCurrentTrendingTopic(data.trendingContext.topic);
+          setTrendingUrgency(data.trendingContext.urgency);
+        }
+        setSuccessBanner(
+          `🔥 AI updated copy with trending wave: "${data.trendingContext?.topic || currentTrendingTopic}" & Google Drive stream ready!`
+        );
+        setTimeout(() => setSuccessBanner(null), 5000);
       }
     } catch (err) {
       console.error(err);
@@ -114,7 +135,7 @@ export function ComposerStudio() {
       if (data.success) {
         setSuccessBanner(
           isInstant
-            ? "🚀 Dispatched to BullMQ workers! Posts and affiliate links published across connected channels."
+            ? "🚀 Dispatched to BullMQ workers! Video & affiliate links published across connected channels."
             : "📅 Successfully queued for automated multi-channel schedule!"
         );
         setTimeout(() => setSuccessBanner(null), 5000);
@@ -148,7 +169,7 @@ export function ComposerStudio() {
           </div>
           <span className="text-xs text-zinc-500">|</span>
           <span className="text-xs text-zinc-400">
-            Split-Screen 3-Column Omni Engine • YouTube & Affiliate Ready
+            Split-Screen 3-Column Omni Engine • Google Drive Video & Viral Trends
           </span>
         </div>
 
@@ -157,10 +178,10 @@ export function ComposerStudio() {
           <button
             onClick={handleAdaptWithAI}
             disabled={isAdapting || !masterCaption}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs font-semibold shadow-lg shadow-violet-600/20 transition-all hover:scale-[1.02]"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 disabled:opacity-50 text-white text-xs font-semibold shadow-lg shadow-violet-600/20 transition-all hover:scale-[1.02]"
           >
             <Sparkles className={`w-3.5 h-3.5 ${isAdapting ? "animate-spin" : ""}`} />
-            <span>{isAdapting ? "Generating Variants..." : "Adapt All with AI"}</span>
+            <span>{isAdapting ? "Analyzing Viral Trends..." : "Generate Trending AI Copy"}</span>
           </button>
 
           <button
@@ -201,29 +222,75 @@ export function ComposerStudio() {
         {/* ========================================================
             COLUMN 1: MASTER POST INPUT (Width: 4/12)
            ======================================================== */}
-        <div className="col-span-4 p-5 overflow-y-auto space-y-5 bg-zinc-950/50">
+        <div className="col-span-4 p-5 overflow-y-auto space-y-4 bg-zinc-950/50">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-cyan-400" />
-              1. Master Idea & Settings
+              1. Master Idea, Google Drive & Trends
             </span>
             <span className="text-[10px] text-zinc-500 font-mono">STEP 1</span>
           </div>
 
-          {/* Master Post Title */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-zinc-400">Post Title / Campaign</label>
-            <input
-              type="text"
-              value={masterTitle}
-              onChange={(e) => setMasterTitle(e.target.value)}
-              placeholder="e.g. Q4 Feature Launch & Product Review"
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/60"
-            />
+          {/* Real-Time Trending Topic Selector */}
+          <div className="p-3 rounded-xl bg-gradient-to-r from-orange-500/10 via-zinc-900 to-zinc-900 border border-orange-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-orange-400 flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5 text-orange-500" />
+                Real-Time Trending Context
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 font-bold">
+                {trendingUrgency}
+              </span>
+            </div>
+
+            <select
+              value={currentTrendingTopic}
+              onChange={(e) => {
+                setCurrentTrendingTopic(e.target.value);
+                const found = REALTIME_TRENDING_FEEDS.find((f) => f.topic === e.target.value);
+                if (found) setTrendingUrgency(found.urgency);
+              }}
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-orange-200 focus:outline-none focus:border-orange-500"
+            >
+              {REALTIME_TRENDING_FEEDS.map((t, idx) => (
+                <option key={idx} value={t.topic}>
+                  {t.topic} ({t.category})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Google Drive Video Link Ingestion Box */}
+          <div className="p-3.5 rounded-xl bg-gradient-to-br from-blue-500/10 via-zinc-900 to-zinc-900 border border-blue-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-blue-400 flex items-center gap-1.5">
+                <HardDrive className="w-3.5 h-3.5 text-blue-400" />
+                Google Drive Video URL (Direct Stream)
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono font-bold">
+                TikTok • Shorts • Reel Ready
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <input
+                type="text"
+                value={googleDriveVideoUrl}
+                onChange={(e) => setGoogleDriveVideoUrl(e.target.value)}
+                placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-blue-200 focus:outline-none focus:border-blue-400"
+              />
+              <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                <span className="flex items-center gap-1 text-emerald-400">
+                  <Check className="w-3 h-3" /> Auto-converted to direct pull URL
+                </span>
+                <span>Supports 9:16 vertical & 16:9</span>
+              </div>
+            </div>
           </div>
 
           {/* Affiliate Conversion Box */}
-          <div className="p-3.5 rounded-xl bg-gradient-to-br from-amber-500/10 via-zinc-900 to-zinc-900 border border-amber-500/30 space-y-2.5">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/10 via-zinc-900 to-zinc-900 border border-amber-500/30 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                 <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
@@ -234,77 +301,58 @@ export function ComposerStudio() {
               </span>
             </div>
 
-            <div className="space-y-2 text-xs">
+            <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
-                <label className="text-[10px] text-zinc-400 block mb-1">Affiliate Link / Referral URL</label>
-                <div className="relative">
-                  <LinkIcon className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={affiliateLink}
-                    onChange={(e) => setAffiliateLink(e.target.value)}
-                    placeholder="https://yourlink.com/ref/partner"
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-amber-200 focus:outline-none focus:border-amber-400"
-                  />
-                </div>
+                <label className="text-[10px] text-zinc-400 block mb-1">Affiliate Link</label>
+                <input
+                  type="text"
+                  value={affiliateLink}
+                  onChange={(e) => setAffiliateLink(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-1.5 text-xs text-amber-200 focus:outline-none focus:border-amber-400"
+                />
               </div>
 
               <div>
-                <label className="text-[10px] text-zinc-400 block mb-1">Product / Brand Promo Name</label>
+                <label className="text-[10px] text-zinc-400 block mb-1">Product Name</label>
                 <input
                   type="text"
                   value={affiliateProductName}
                   onChange={(e) => setAffiliateProductName(e.target.value)}
-                  placeholder="e.g. OmniSocial Hub Pro"
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-amber-400"
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-1.5 text-xs text-zinc-200 focus:outline-none focus:border-amber-400"
                 />
               </div>
             </div>
           </div>
 
-          {/* Master Caption */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between items-center">
-              <label className="text-[11px] font-semibold text-zinc-400">Master Script / Core Thought</label>
-              <span className="text-[10px] text-zinc-500">{masterCaption.length} chars</span>
-            </div>
-            <textarea
-              rows={5}
-              value={masterCaption}
-              onChange={(e) => setMasterCaption(e.target.value)}
-              placeholder="Type your base message or campaign thought here. The AI engine will reshape this into platform-specific lengths, hooks, timestamps, and affiliate links..."
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/60 leading-relaxed resize-none"
+          {/* Master Post Title */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-semibold text-zinc-400">Campaign Title</label>
+            <input
+              type="text"
+              value={masterTitle}
+              onChange={(e) => setMasterTitle(e.target.value)}
+              placeholder="e.g. Q4 Feature Launch"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/60"
             />
           </div>
 
-          {/* Tone & AI Preset */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-zinc-400">AI Adaptation Tone</label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { id: "viral_edgy", label: "🔥 Viral & Edgy" },
-                { id: "engaging", label: "💬 Engaging" },
-                { id: "professional", label: "💼 SaaS Pro" },
-                { id: "educational", label: "📚 Guide & Demo" },
-                { id: "casual", label: "☕ Casual" },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setTone(t.id)}
-                  className={`px-2.5 py-1.5 rounded-md text-[11px] font-medium border text-left transition-colors ${
-                    tone === t.id
-                      ? "bg-violet-600/20 border-violet-500 text-violet-300"
-                      : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
+          {/* Master Caption */}
+          <div className="space-y-1">
+            <div className="flex justify-between items-center">
+              <label className="text-[11px] font-semibold text-zinc-400">Master Thought / Script</label>
+              <span className="text-[10px] text-zinc-500">{masterCaption.length} chars</span>
             </div>
+            <textarea
+              rows={4}
+              value={masterCaption}
+              onChange={(e) => setMasterCaption(e.target.value)}
+              placeholder="Enter your core ideas. The AI will weave in current trending hooks and hashtags..."
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/60 leading-relaxed resize-none"
+            />
           </div>
 
           {/* Target Platforms Toggles */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-[11px] font-semibold text-zinc-400">Target Publishing Channels</label>
             <div className="grid grid-cols-2 gap-2">
               {Object.keys(PLATFORM_CONFIGS).map((key) => {
@@ -329,65 +377,6 @@ export function ComposerStudio() {
               })}
             </div>
           </div>
-
-          {/* Media Attachments */}
-          <div className="space-y-2">
-            <label className="text-[11px] font-semibold text-zinc-400">Media Assets (Images / Videos)</label>
-            <div className="space-y-2">
-              {masterMediaUrls.map((url, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-300"
-                >
-                  <div className="flex items-center gap-2 truncate">
-                    <ImageIcon className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                    <span className="truncate">{url}</span>
-                  </div>
-                  <button
-                    onClick={() => removeMediaUrl(idx)}
-                    className="text-zinc-500 hover:text-red-400 p-1"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Paste YouTube Shorts / 9:16 video URL..."
-                  value={newMediaInput}
-                  onChange={(e) => setNewMediaInput(e.target.value)}
-                  className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/60"
-                />
-                <button
-                  onClick={() => {
-                    if (newMediaInput.trim()) {
-                      addMediaUrl(newMediaInput.trim());
-                      setNewMediaInput("");
-                    }
-                  }}
-                  className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Scheduled Date Picker */}
-          <div className="space-y-1.5 pt-2 border-t border-zinc-800">
-            <label className="text-[11px] font-semibold text-zinc-400">Schedule Date & Time</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="datetime-local"
-                value={scheduledAt || ""}
-                onChange={(e) => setScheduledAt(e.target.value || null)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-cyan-500/60"
-              />
-            </div>
-          </div>
         </div>
 
         {/* ========================================================
@@ -399,7 +388,7 @@ export function ComposerStudio() {
               <span className="w-2 h-2 rounded-full bg-violet-400" />
               2. Tailored Platform Variants
             </span>
-            <span className="text-[10px] text-zinc-500 font-mono">EDIT PER PLATFORM</span>
+            <span className="text-[10px] text-zinc-500 font-mono">TRENDING & GDRIVE ADAPTED</span>
           </div>
 
           {/* Platform Tab Navigation */}
@@ -438,12 +427,17 @@ export function ComposerStudio() {
             <div className="text-[11px] text-cyan-400/90 font-medium">
               💡 {activeConfig.aspectRatioHint}
             </div>
+            {googleDriveVideoUrl && (
+              <div className="text-[10px] text-blue-400 flex items-center gap-1 pt-1 border-t border-zinc-800">
+                <Film className="w-3 h-3" /> Attached: Google Drive Video Stream
+              </div>
+            )}
           </div>
 
           {/* Customized Platform Caption */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold text-zinc-400">
-              Adapted Caption (Editable Override)
+              Adapted Caption (Trending Hooks & SEO)
             </label>
             <textarea
               rows={8}
@@ -457,12 +451,14 @@ export function ComposerStudio() {
 
           {/* Hashtag Management */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-zinc-400">Target Hashtags</label>
+            <label className="text-[11px] font-semibold text-zinc-400">
+              Surging Trending Hashtags
+            </label>
             <div className="flex flex-wrap gap-1.5">
               {(currentVariant.hashtags || []).map((tag, idx) => (
                 <span
                   key={idx}
-                  className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800 text-[11px] text-zinc-300 font-mono"
+                  className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800 text-[11px] text-orange-300 font-mono"
                 >
                   {tag}
                 </span>
@@ -502,24 +498,6 @@ export function ComposerStudio() {
                   className="w-full bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-[11px] text-amber-200"
                 />
               </div>
-            </div>
-          )}
-
-          {/* Pinterest Extra */}
-          {activeVariantTab === Platform.PINTEREST && (
-            <div className="space-y-2 pt-2 border-t border-zinc-800">
-              <label className="text-[11px] font-semibold text-rose-400">Pinterest Pin Specifics</label>
-              <input
-                type="text"
-                placeholder="Pin Title (SEO optimized)"
-                value={currentVariant.options?.title || ""}
-                onChange={(e) =>
-                  updateVariant(Platform.PINTEREST, {
-                    options: { ...currentVariant.options, title: e.target.value },
-                  })
-                }
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200"
-              />
             </div>
           )}
         </div>
