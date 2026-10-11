@@ -19,7 +19,9 @@ import {
   ThumbsDown,
   ShoppingBag,
   Tag,
-  Film
+  Film,
+  ShieldAlert,
+  SlidersHorizontal
 } from "lucide-react";
 import { parseGoogleDriveUrl } from "@/lib/gdrive-resolver";
 
@@ -44,6 +46,7 @@ export function DevicePreview({
 }: DevicePreviewProps) {
   const [deviceFrame, setDeviceFrame] = useState<"phone" | "card">("phone");
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+  const [showSafeZones, setShowSafeZones] = useState(true);
 
   const rawMedia = googleDriveUrl || mediaUrls[0] || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80";
 
@@ -75,16 +78,16 @@ export function DevicePreview({
         </div>
       )}
 
-      {/* Device Mode Toggle & Video Playback State */}
-      <div className="flex items-center justify-between w-full px-2">
-        <div className="flex items-center gap-1.5 bg-zinc-900/90 p-1 rounded-lg border border-zinc-800 text-[11px]">
+      {/* Device Mode Toggle & Safe Zones & Video Playback State */}
+      <div className="flex items-center justify-between w-full px-1 gap-2">
+        <div className="flex items-center gap-1 bg-zinc-900/90 p-1 rounded-lg border border-zinc-800 text-[11px]">
           <button
             onClick={() => setDeviceFrame("phone")}
             className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
               deviceFrame === "phone" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
-            Mobile Frame
+            Mobile
           </button>
           <button
             onClick={() => setDeviceFrame("card")}
@@ -92,21 +95,37 @@ export function DevicePreview({
               deviceFrame === "card" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
-            Feed Card
+            Card
           </button>
         </div>
+
+        {/* Safe Zone Overlay Toggle (TikTok, Shorts, Reels) */}
+        {(platform === Platform.TIKTOK || platform === Platform.YOUTUBE || platform === Platform.INSTAGRAM) && (
+          <button
+            onClick={() => setShowSafeZones(!showSafeZones)}
+            title="Kiểm tra vùng an toàn (Safe Zone) tránh bị che text bởi UI"
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+              showSafeZones
+                ? "bg-amber-500/15 border-amber-500/40 text-amber-300"
+                : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
+            }`}
+          >
+            <ShieldAlert className="w-3 h-3 text-amber-400" />
+            <span>{showSafeZones ? "Safe Zone: ON" : "Safe Zone: OFF"}</span>
+          </button>
+        )}
 
         {/* Video Player Toggle */}
         <button
           onClick={() => setIsPlayingVideo(!isPlayingVideo)}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
+          className={`flex items-center gap-1 px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
             isPlayingVideo
               ? "bg-red-500/20 text-red-300 border border-red-500/40"
               : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
           }`}
         >
           <Film className="w-3.5 h-3.5" />
-          <span>{isPlayingVideo ? "Stop Video" : "▶ Play Video"}</span>
+          <span>{isPlayingVideo ? "Stop" : "▶ Play"}</span>
         </button>
       </div>
 
@@ -118,8 +137,23 @@ export function DevicePreview({
             <div className="w-2.5 h-2.5 rounded-full bg-zinc-900 ring-1 ring-zinc-800" />
           </div>
 
+          {/* Safe Zone Visual Guide Overlay (9:16 vertical video guidelines) */}
+          {showSafeZones && (platform === Platform.TIKTOK || platform === Platform.YOUTUBE || platform === Platform.INSTAGRAM) && (
+            <div className="absolute inset-0 z-40 pointer-events-none border-2 border-dashed border-amber-400/50 m-2 mt-8 mb-6 rounded-2xl flex flex-col justify-between p-2">
+              <div className="bg-amber-400/90 text-zinc-950 px-2 py-0.5 rounded text-[9px] font-extrabold self-start shadow">
+                ⚠️ Top Header Zone (Avoid important text)
+              </div>
+              <div className="self-end mr-14 bg-amber-400/90 text-zinc-950 px-2 py-0.5 rounded text-[9px] font-extrabold shadow">
+                ⚠️ Right Action Buttons (Like/Share/Comment)
+              </div>
+              <div className="bg-amber-400/90 text-zinc-950 px-2 py-0.5 rounded text-[9px] font-extrabold self-start shadow">
+                ⚠️ Bottom Caption & Sound Area (Safe Margins)
+              </div>
+            </div>
+          )}
+
           {/* Render Mockup based on Platform */}
-          <div className="flex-1 overflow-y-auto pt-7 pb-4">
+          <div className="flex-1 overflow-hidden relative">
             {platform === Platform.YOUTUBE && (
               <YouTubeMockup 
                 caption={caption} 
