@@ -21,7 +21,11 @@ import {
   Tag,
   Film,
   ShieldAlert,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Camera,
+  Volume2,
+  Search,
+  UserPlus
 } from "lucide-react";
 import { parseGoogleDriveUrl } from "@/lib/gdrive-resolver";
 
@@ -99,8 +103,8 @@ export function DevicePreview({
           </button>
         </div>
 
-        {/* Safe Zone Overlay Toggle (TikTok, Shorts, Reels) */}
-        {(platform === Platform.TIKTOK || platform === Platform.YOUTUBE || platform === Platform.INSTAGRAM) && (
+        {/* Safe Zone Overlay Toggle (TikTok, Shorts, Reels, FB Reels) */}
+        {(platform === Platform.TIKTOK || platform === Platform.YOUTUBE || platform === Platform.INSTAGRAM || platform === Platform.FACEBOOK) && (
           <button
             onClick={() => setShowSafeZones(!showSafeZones)}
             title="Kiểm tra vùng an toàn (Safe Zone) tránh bị che text bởi UI"
@@ -138,7 +142,7 @@ export function DevicePreview({
           </div>
 
           {/* Safe Zone Visual Guide Overlay (9:16 vertical video guidelines) */}
-          {showSafeZones && (platform === Platform.TIKTOK || platform === Platform.YOUTUBE || platform === Platform.INSTAGRAM) && (
+          {showSafeZones && (platform === Platform.TIKTOK || platform === Platform.YOUTUBE || platform === Platform.INSTAGRAM || platform === Platform.FACEBOOK) && (
             <div className="absolute inset-0 z-40 pointer-events-none border-2 border-dashed border-amber-400/50 m-2 mt-8 mb-6 rounded-2xl flex flex-col justify-between p-2">
               <div className="bg-amber-400/90 text-zinc-950 px-2 py-0.5 rounded text-[9px] font-extrabold self-start shadow">
                 ⚠️ Top Header Zone (Avoid important text)
@@ -154,7 +158,7 @@ export function DevicePreview({
 
           {/* Render Mockup based on Platform */}
           <div className={`flex-1 relative ${
-            (platform === Platform.YOUTUBE || platform === Platform.TIKTOK)
+            (platform === Platform.YOUTUBE || platform === Platform.TIKTOK || platform === Platform.INSTAGRAM || platform === Platform.FACEBOOK)
               ? "overflow-hidden"
               : "overflow-y-auto scrollbar-none"
           }`}>
@@ -408,7 +412,7 @@ function YouTubeMockup({
   );
 }
 
-// 1. TikTok Reels Simulation with Video Player
+// 1. TikTok Reels Simulation with Video Player & Authentic Native UI
 function TikTokMockup({ 
   caption, 
   media, 
@@ -425,7 +429,7 @@ function TikTokMockup({
   onTogglePlay?: () => void;
 }) {
   return (
-    <div className="relative h-full w-full bg-black flex flex-col justify-between overflow-hidden">
+    <div className="relative h-full w-full bg-black flex flex-col justify-between overflow-hidden font-sans">
       {/* Video or Thumbnail Background */}
       {isPlayingVideo && gdriveInfo?.embedVideoUrl ? (
         <iframe
@@ -455,90 +459,112 @@ function TikTokMockup({
           {/* Play Overlay Button */}
           <button
             onClick={onTogglePlay}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-cyan-500/90 text-zinc-950 flex items-center justify-center shadow-xl shadow-cyan-500/30 hover:scale-110 transition-transform z-10"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-black/40 backdrop-blur-md border border-white/30 text-white flex items-center justify-center shadow-xl hover:scale-110 transition-transform z-10"
           >
-            <div className="w-0 h-0 border-y-8 border-y-transparent border-l-[14px] border-l-zinc-950 ml-1" />
+            <div className="w-0 h-0 border-y-7 border-y-transparent border-l-[14px] border-l-white ml-1" />
           </button>
         </>
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90 pointer-events-none z-10" />
+      {/* Subtle overlays */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none z-10" />
 
-      {/* Top Header */}
-      <div className="relative z-20 flex items-center justify-between px-4 pt-2 text-white/90 text-xs font-semibold">
-        <span className="text-white/60">LIVE</span>
-        <div className="flex gap-4">
-          <span className="text-white/60">Following</span>
-          <span className="text-white border-b-2 border-white pb-0.5">For You</span>
+      {/* Top Header - Authentic TikTok Header */}
+      <div className="relative z-20 flex items-center justify-between px-4 pt-3 text-white text-xs font-semibold">
+        <div className="flex items-center gap-1.5 text-white/80">
+          <span className="text-[11px] font-bold tracking-tight">LIVE</span>
         </div>
-        <Eye className="w-4 h-4 text-white/70" />
+        <div className="flex items-center gap-5">
+          <span className="text-white/60 text-xs font-medium cursor-pointer">Following</span>
+          <div className="relative">
+            <span className="text-white text-xs font-bold">For You</span>
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-white rounded-full" />
+          </div>
+        </div>
+        <Search className="w-4 h-4 text-white/90" />
       </div>
 
-      {/* Right Sidebar Interaction Icons */}
-      <div className="relative z-20 self-end mr-3 flex flex-col items-center gap-4 text-white">
-        <div className="relative">
-          <div className="w-10 h-10 rounded-full border-2 border-white overflow-hidden bg-zinc-700">
+      {/* Right Sidebar Interaction Icons - Authentic TikTok Right Rail */}
+      <div className="relative z-20 self-end mr-2.5 mb-14 flex flex-col items-center gap-3.5 text-white">
+        {/* Creator Avatar with Red Plus */}
+        <div className="relative mb-1">
+          <div className="w-10 h-10 rounded-full border-2 border-white overflow-hidden bg-zinc-800 shadow-md">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80" alt="Avatar" className="w-full h-full object-cover" />
           </div>
-          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-bold">
+          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-4 bg-[#FE2C55] rounded-full flex items-center justify-center text-white text-[11px] font-bold shadow">
             +
           </div>
         </div>
 
+        {/* Like */}
         <div className="flex flex-col items-center">
-          <div className="p-2 rounded-full bg-black/40 backdrop-blur-md">
-            <Heart className="w-6 h-6 text-red-500 fill-red-500" />
+          <div className="p-1">
+            <Heart className="w-7 h-7 text-white fill-white drop-shadow" />
           </div>
-          <span className="text-[10px] font-semibold mt-0.5">84.2K</span>
+          <span className="text-[10px] font-semibold tracking-tight text-white/95">182.4K</span>
         </div>
 
+        {/* Comment */}
         <div className="flex flex-col items-center">
-          <div className="p-2 rounded-full bg-black/40 backdrop-blur-md">
-            <MessageCircle className="w-6 h-6 text-white" />
+          <div className="p-1">
+            <MessageCircle className="w-7 h-7 text-white drop-shadow fill-white/10" />
           </div>
-          <span className="text-[10px] font-semibold mt-0.5">1,248</span>
+          <span className="text-[10px] font-semibold tracking-tight text-white/95">3,490</span>
         </div>
 
+        {/* Bookmark / Favorite */}
         <div className="flex flex-col items-center">
-          <div className="p-2 rounded-full bg-black/40 backdrop-blur-md">
-            <Bookmark className="w-6 h-6 text-amber-400 fill-amber-400" />
+          <div className="p-1">
+            <Bookmark className="w-7 h-7 text-white drop-shadow fill-white/10" />
           </div>
-          <span className="text-[10px] font-semibold mt-0.5">9,410</span>
+          <span className="text-[10px] font-semibold tracking-tight text-white/95">24.1K</span>
         </div>
 
+        {/* Share */}
         <div className="flex flex-col items-center">
-          <div className="p-2 rounded-full bg-black/40 backdrop-blur-md">
-            <Share2 className="w-6 h-6 text-white" />
+          <div className="p-1">
+            <Share2 className="w-7 h-7 text-white drop-shadow fill-white/10" />
           </div>
-          <span className="text-[10px] font-semibold mt-0.5">3.8K</span>
+          <span className="text-[10px] font-semibold tracking-tight text-white/95">12.5K</span>
+        </div>
+
+        {/* Spinning Vinyl Record Disc */}
+        <div className="mt-1 w-9 h-9 rounded-full bg-zinc-950 border-4 border-zinc-800 flex items-center justify-center shadow-lg animate-spin" style={{ animationDuration: "5s" }}>
+          <div className="w-4 h-4 rounded-full bg-cover overflow-hidden" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80')" }} />
         </div>
       </div>
 
-      {/* Bottom Caption & Audio Bar */}
-      <div className="relative z-20 px-4 pb-4 text-white space-y-2">
+      {/* Bottom Caption & Audio Bar - Authentic TikTok Bottom Layout */}
+      <div className="relative z-20 px-3.5 pb-5 text-white space-y-1.5 max-w-[270px]">
         <div className="flex items-center gap-1.5">
-          <span className="font-bold text-xs">@acmedaily</span>
-          <BadgeCheck className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+          <span className="font-bold text-xs tracking-wide">@acme.creator</span>
+          <BadgeCheck className="w-3.5 h-3.5 text-[#20D5EC] fill-[#20D5EC]" />
           {gdriveInfo?.isGoogleDrive && (
-            <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-500/30 text-blue-300 font-mono">
+            <span className="text-[8px] px-1.5 py-0.2 rounded bg-blue-500/40 text-blue-200 font-mono font-bold">
               GDrive
             </span>
           )}
         </div>
-        <p className="text-[11px] line-clamp-3 text-zinc-100 leading-snug">
-          {caption || "Write your viral TikTok hook here..."}
+
+        <p className="text-[11px] line-clamp-2 text-zinc-100 leading-snug drop-shadow-sm font-normal">
+          {caption || "Tap to discover viral tricks! #trending #foryou #viral"}
         </p>
-        <div className="flex items-center gap-2 text-[10px] text-zinc-300">
-          <Music2 className="w-3 h-3 animate-spin" />
-          <span className="truncate">{options?.soundRecommendation || "Original Audio - Acme Viral Sound"}</span>
+
+        <div className="flex items-center gap-2 text-[10px] text-zinc-200 pt-0.5">
+          <Music2 className="w-3 h-3 shrink-0" />
+          <div className="overflow-hidden whitespace-nowrap">
+            <span className="inline-block text-[10px] font-medium opacity-90 truncate">
+              {options?.soundRecommendation || "♫ Original Sound - Acme Creator Trending Audio"}
+            </span>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// 2. Instagram Feed Simulation with Video Player
+// 2. Instagram Reels Simulation with Video Player & Authentic Native UI
 function InstagramMockup({ 
   caption, 
   media, 
@@ -553,86 +579,107 @@ function InstagramMockup({
   onTogglePlay?: () => void;
 }) {
   return (
-    <div className="bg-black text-white flex flex-col h-full">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-900">
+    <div className="relative h-full w-full bg-black flex flex-col justify-between overflow-hidden font-sans">
+      {/* Video or Thumbnail Background (9:16 Full Screen Reel) */}
+      {isPlayingVideo && gdriveInfo?.embedVideoUrl ? (
+        <iframe
+          src={gdriveInfo.embedVideoUrl}
+          className="absolute inset-0 w-full h-full border-0 z-0 bg-black"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+        />
+      ) : isPlayingVideo && gdriveInfo?.directStreamUrl ? (
+        <video
+          src={gdriveInfo.directStreamUrl}
+          controls
+          autoPlay
+          className="absolute inset-0 w-full h-full object-cover z-0 bg-black"
+        />
+      ) : (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={media}
+            alt="Instagram Reel"
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+            }}
+          />
+          {/* Play Overlay Button */}
+          <button
+            onClick={onTogglePlay}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:scale-110 transition-transform z-10"
+          >
+            <div className="w-0 h-0 border-y-7 border-y-transparent border-l-[14px] border-l-white ml-1" />
+          </button>
+        </>
+      )}
+
+      {/* Gradient Vignette */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/85 pointer-events-none z-10" />
+
+      {/* Top Header - Authentic Instagram Reels Header */}
+      <div className="relative z-20 flex items-center justify-between px-4 pt-3 text-white">
+        <span className="text-base font-bold tracking-tight">Reels</span>
+        <Camera className="w-5 h-5 text-white/90" />
+      </div>
+
+      {/* Right Action Rail - Authentic Instagram Reels Right Icons */}
+      <div className="relative z-20 self-end mr-3 mb-10 flex flex-col items-center gap-4 text-white">
+        <div className="flex flex-col items-center">
+          <Heart className="w-7 h-7 text-white stroke-[1.8] drop-shadow" />
+          <span className="text-[10px] font-semibold mt-1">94.3K</span>
+        </div>
+
+        <div className="flex flex-col items-center">
+          <MessageCircle className="w-7 h-7 text-white stroke-[1.8] drop-shadow" />
+          <span className="text-[10px] font-semibold mt-1">812</span>
+        </div>
+
+        <div className="flex flex-col items-center">
+          <Send className="w-6 h-6 text-white stroke-[1.8] -rotate-12 drop-shadow" />
+          <span className="text-[10px] font-semibold mt-1">15.2K</span>
+        </div>
+
+        <div className="flex flex-col items-center">
+          <Bookmark className="w-6 h-6 text-white stroke-[1.8] drop-shadow" />
+        </div>
+
+        <div className="flex flex-col items-center">
+          <MoreHorizontal className="w-6 h-6 text-white stroke-[1.8] drop-shadow" />
+        </div>
+
+        {/* Small Audio Square */}
+        <div className="w-6 h-6 rounded-md border border-white/60 overflow-hidden bg-zinc-800">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80" alt="Audio Cover" className="w-full h-full object-cover" />
+        </div>
+      </div>
+
+      {/* Bottom Creator Info & Caption - Authentic Instagram Reels Bottom Layout */}
+      <div className="relative z-20 px-3.5 pb-5 text-white space-y-2 max-w-[265px]">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600">
+          {/* Gradient Avatar */}
+          <div className="w-8 h-8 rounded-full p-[1.5px] bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80" alt="Avatar" className="w-full h-full rounded-full object-cover border border-black" />
           </div>
-          <div>
-            <div className="flex items-center gap-1">
-              <span className="text-xs font-bold">acme.official</span>
-              <BadgeCheck className="w-3 h-3 text-blue-400 fill-blue-400" />
-            </div>
-            <div className="text-[9px] text-zinc-400">Reel • Audio original</div>
-          </div>
-        </div>
-        <MoreHorizontal className="w-4 h-4 text-zinc-400" />
-      </div>
-
-      <div className="relative aspect-square w-full bg-zinc-900 overflow-hidden">
-        {isPlayingVideo && gdriveInfo?.embedVideoUrl ? (
-          <iframe
-            src={gdriveInfo.embedVideoUrl}
-            className="w-full h-full border-0 bg-black"
-            allow="autoplay; encrypted-media"
-            allowFullScreen
-          />
-        ) : isPlayingVideo && gdriveInfo?.directStreamUrl ? (
-          <video
-            src={gdriveInfo.directStreamUrl}
-            controls
-            autoPlay
-            className="w-full h-full object-cover bg-black"
-          />
-        ) : (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={media}
-              alt="Instagram Post"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
-              }}
-            />
-            {/* Play Overlay Button */}
-            <button
-              onClick={onTogglePlay}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:scale-110 transition-transform"
-            >
-              <div className="w-0 h-0 border-y-6 border-y-transparent border-l-[12px] border-l-white ml-1" />
-            </button>
-          </>
-        )}
-        {gdriveInfo?.isGoogleDrive && (
-          <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[9px] font-bold text-blue-300">
-            Google Drive Stream
-          </div>
-        )}
-      </div>
-
-      <div className="p-3 space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Heart className="w-5 h-5 text-zinc-200 hover:text-red-500" />
-            <MessageCircle className="w-5 h-5 text-zinc-200" />
-            <Send className="w-5 h-5 text-zinc-200" />
-          </div>
-          <Bookmark className="w-5 h-5 text-zinc-200" />
+          <span className="text-xs font-bold tracking-tight">acme.official</span>
+          <button className="px-2.5 py-0.5 rounded-md border border-white/60 text-[10px] font-semibold text-white hover:bg-white/10 transition-colors">
+            Follow
+          </button>
         </div>
 
-        <div className="text-xs font-bold text-zinc-100">14,291 likes</div>
+        <p className="text-[11px] line-clamp-2 text-zinc-100 leading-snug drop-shadow-sm">
+          {caption || "Discover the newest inspiration for creative reels ✨ #reels #explore"}
+        </p>
 
-        <div className="text-xs text-zinc-200 space-y-1">
-          <span className="font-bold mr-1.5">acme.official</span>
-          <span className="whitespace-pre-line text-[11px] leading-relaxed text-zinc-300">
-            {caption || "Instagram caption preview with tailored spacing and hashtags..."}
-          </span>
+        {/* Audio tag */}
+        <div className="flex items-center gap-1.5 text-[10px] text-zinc-200">
+          <Music2 className="w-3 h-3" />
+          <span className="truncate">acme.official • Original audio</span>
         </div>
-
-        <div className="text-[10px] text-zinc-500 uppercase tracking-wide">2 HOURS AGO</div>
       </div>
     </div>
   );
@@ -782,7 +829,7 @@ function ThreadsMockup({
   );
 }
 
-// 5. Facebook Feed Mockup
+// 5. Facebook Reels Simulation with Video Player & Authentic Native UI
 function FacebookMockup({ 
   caption, 
   media, 
@@ -797,74 +844,126 @@ function FacebookMockup({
   onTogglePlay?: () => void;
 }) {
   return (
-    <div className="bg-zinc-950 text-white rounded-lg border border-zinc-900 space-y-2.5">
-      <div className="p-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white text-xs">
-            AG
-          </div>
-          <div>
-            <div className="text-xs font-bold text-zinc-100 flex items-center gap-1">
-              Acme Global Official
-              <BadgeCheck className="w-3 h-3 text-blue-500 fill-blue-500" />
-            </div>
-            <div className="text-[10px] text-zinc-500">Facebook Reel · 🌍 Public</div>
-          </div>
-        </div>
-        <MoreHorizontal className="w-4 h-4 text-zinc-500" />
-      </div>
-
-      <p className="px-3 text-xs text-zinc-200 whitespace-pre-line leading-relaxed">
-        {caption || "Facebook post message..."}
-      </p>
-
-      {media && (
-        <div className="aspect-video w-full bg-zinc-900 overflow-hidden relative">
-          {isPlayingVideo && gdriveInfo?.embedVideoUrl ? (
-            <iframe
-              src={gdriveInfo.embedVideoUrl}
-              className="w-full h-full border-0 bg-black"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-            />
-          ) : isPlayingVideo && gdriveInfo?.directStreamUrl ? (
-            <video
-              src={gdriveInfo.directStreamUrl}
-              controls
-              autoPlay
-              className="w-full h-full object-cover bg-black"
-            />
-          ) : (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={media}
-                alt="FB Media"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
-                }}
-              />
-              <button
-                onClick={onTogglePlay}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-blue-600/90 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-              >
-                <div className="w-0 h-0 border-y-6 border-y-transparent border-l-[12px] border-l-white ml-1" />
-              </button>
-            </>
-          )}
-          {gdriveInfo?.isGoogleDrive && (
-            <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[9px] font-bold text-blue-300">
-              Facebook Reel Stream
-            </div>
-          )}
-        </div>
+    <div className="relative h-full w-full bg-black flex flex-col justify-between overflow-hidden font-sans">
+      {/* Video or Thumbnail Background (9:16 Full Screen Reel) */}
+      {isPlayingVideo && gdriveInfo?.embedVideoUrl ? (
+        <iframe
+          src={gdriveInfo.embedVideoUrl}
+          className="absolute inset-0 w-full h-full border-0 z-0 bg-black"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+        />
+      ) : isPlayingVideo && gdriveInfo?.directStreamUrl ? (
+        <video
+          src={gdriveInfo.directStreamUrl}
+          controls
+          autoPlay
+          className="absolute inset-0 w-full h-full object-cover z-0 bg-black"
+        />
+      ) : (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={media}
+            alt="Facebook Reel"
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+            }}
+          />
+          {/* Play Overlay Button */}
+          <button
+            onClick={onTogglePlay}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-blue-600/80 backdrop-blur-md border border-white/30 text-white flex items-center justify-center shadow-xl hover:scale-110 transition-transform z-10"
+          >
+            <div className="w-0 h-0 border-y-7 border-y-transparent border-l-[14px] border-l-white ml-1" />
+          </button>
+        </>
       )}
 
-      <div className="p-3 pt-1 border-t border-zinc-900 flex justify-between text-xs text-zinc-400">
-        <span className="hover:text-blue-400 flex items-center gap-1">👍 Like</span>
-        <span className="hover:text-zinc-200 flex items-center gap-1">💬 Comment</span>
-        <span className="hover:text-zinc-200 flex items-center gap-1">↗️ Share</span>
+      {/* Gradient Vignette */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/85 pointer-events-none z-10" />
+
+      {/* Top Header - Authentic Facebook Reels Header */}
+      <div className="relative z-20 flex items-center justify-between px-4 pt-3 text-white">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-[#1877F2] flex items-center justify-center font-bold text-white text-[13px] shadow">
+            f
+          </div>
+          <span className="text-sm font-bold tracking-tight">Reels</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Search className="w-4 h-4 text-white/90" />
+          <Camera className="w-5 h-5 text-white/90" />
+        </div>
+      </div>
+
+      {/* Right Action Rail - Authentic Facebook Reels Right Icons */}
+      <div className="relative z-20 self-end mr-3 mb-10 flex flex-col items-center gap-4 text-white">
+        {/* Like */}
+        <div className="flex flex-col items-center">
+          <div className="p-1">
+            <ThumbsUp className="w-6 h-6 text-white drop-shadow stroke-[1.8]" />
+          </div>
+          <span className="text-[10px] font-semibold mt-0.5">52.8K</span>
+        </div>
+
+        {/* Comment */}
+        <div className="flex flex-col items-center">
+          <div className="p-1">
+            <MessageCircle className="w-6 h-6 text-white drop-shadow stroke-[1.8]" />
+          </div>
+          <span className="text-[10px] font-semibold mt-0.5">1,402</span>
+        </div>
+
+        {/* Share */}
+        <div className="flex flex-col items-center">
+          <div className="p-1">
+            <Share2 className="w-6 h-6 text-white drop-shadow stroke-[1.8]" />
+          </div>
+          <span className="text-[10px] font-semibold mt-0.5">8.9K</span>
+        </div>
+
+        {/* More options */}
+        <div className="flex flex-col items-center">
+          <div className="p-1">
+            <MoreHorizontal className="w-6 h-6 text-white drop-shadow" />
+          </div>
+        </div>
+
+        {/* Small Audio/Reel Avatar Disc */}
+        <div className="w-7 h-7 rounded-full border-2 border-white/80 overflow-hidden bg-zinc-800 shadow">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80" alt="Audio Cover" className="w-full h-full object-cover" />
+        </div>
+      </div>
+
+      {/* Bottom Creator Info & Caption - Authentic Facebook Reels Bottom Layout */}
+      <div className="relative z-20 px-3.5 pb-5 text-white space-y-2 max-w-[265px]">
+        <div className="flex items-center gap-2">
+          {/* Facebook Creator Avatar */}
+          <div className="w-8 h-8 rounded-full border border-blue-500 overflow-hidden shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80" alt="Avatar" className="w-full h-full object-cover" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold tracking-tight">Acme Global</span>
+            <BadgeCheck className="w-3.5 h-3.5 text-[#1877F2] fill-[#1877F2]" />
+          </div>
+          <button className="px-2.5 py-0.5 rounded-full bg-[#1877F2] hover:bg-blue-600 text-[10px] font-bold text-white shadow-sm transition-colors">
+            Theo dõi
+          </button>
+        </div>
+
+        <p className="text-[11px] line-clamp-2 text-zinc-100 leading-snug drop-shadow-sm">
+          {caption || "Khám phá video Reel mới nhất của chúng tôi cùng các ưu đãi đặc quyền! #facebookreels"}
+        </p>
+
+        {/* Audio tag */}
+        <div className="flex items-center gap-1.5 text-[10px] text-zinc-200">
+          <Music2 className="w-3 h-3" />
+          <span className="truncate">Âm thanh gốc • Acme Global Official</span>
+        </div>
       </div>
     </div>
   );
