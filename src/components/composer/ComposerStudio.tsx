@@ -475,8 +475,8 @@ export function ComposerStudio() {
             <span className="text-[10px] text-zinc-500 font-mono">PRODUCT & TRENDING ADAPTED</span>
           </div>
 
-          {/* Platform Tab Navigation */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          {/* Platform Tab Navigation - SHOW ALL PLATFORMS CLEARLY */}
+          <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-xl bg-zinc-900/80 border border-zinc-800">
             {selectedPlatforms.map((p) => {
               const cfg = PLATFORM_CONFIGS[p] || PLATFORM_CONFIGS.YOUTUBE;
               const Icon = cfg.icon;
@@ -485,13 +485,13 @@ export function ComposerStudio() {
                 <button
                   key={p}
                   onClick={() => setActiveVariantTab(p)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition-all ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     isActive
-                      ? "bg-zinc-800 text-white border border-zinc-700 shadow-sm"
-                      : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900"
+                      ? "bg-zinc-800 text-white border border-cyan-500/50 shadow-md shadow-cyan-500/10 text-cyan-300"
+                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-cyan-400" : "text-zinc-500"}`} />
                   <span>{cfg.name}</span>
                 </button>
               );
@@ -602,7 +602,10 @@ export function ComposerStudio() {
             platform={activeVariantTab}
             caption={currentVariant.caption}
             mediaUrls={currentVariant.mediaUrls || masterMediaUrls}
+            googleDriveUrl={googleDriveVideoUrl}
             options={currentVariant.options}
+            availablePlatforms={selectedPlatforms}
+            onSelectPlatform={(p) => setActiveVariantTab(p)}
           />
         </div>
       </div>

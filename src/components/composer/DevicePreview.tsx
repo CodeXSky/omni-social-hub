@@ -28,35 +28,85 @@ interface DevicePreviewProps {
   caption: string;
   mediaUrls: string[];
   options?: Record<string, any>;
+  googleDriveUrl?: string;
+  onSelectPlatform?: (platform: Platform) => void;
+  availablePlatforms?: Platform[];
 }
 
-export function DevicePreview({ platform, caption, mediaUrls, options = {} }: DevicePreviewProps) {
+export function DevicePreview({ 
+  platform, 
+  caption, 
+  mediaUrls, 
+  options = {},
+  googleDriveUrl,
+  onSelectPlatform,
+  availablePlatforms = []
+}: DevicePreviewProps) {
   const [deviceFrame, setDeviceFrame] = useState<"phone" | "card">("phone");
-  const rawMedia = mediaUrls[0] || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80";
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+
+  const rawMedia = googleDriveUrl || mediaUrls[0] || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80";
 
   // Check if media is Google Drive
   const gdriveInfo = parseGoogleDriveUrl(rawMedia);
   const media = gdriveInfo.previewThumbnailUrl || rawMedia;
 
   return (
-    <div className="flex flex-col items-center justify-center w-full">
-      {/* Device Mode Toggle */}
-      <div className="flex items-center gap-2 mb-4 bg-zinc-900/80 p-1 rounded-lg border border-zinc-800 text-[11px]">
+    <div className="flex flex-col items-center justify-center w-full space-y-3">
+      {/* Simulator Platform Quick Switcher & Controls */}
+      {availablePlatforms.length > 0 && onSelectPlatform && (
+        <div className="w-full flex items-center justify-between gap-1 pb-1 border-b border-zinc-900">
+          <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Preview Platform:</span>
+          <div className="flex items-center gap-1 overflow-x-auto max-w-[260px] scrollbar-none">
+            {availablePlatforms.map((p) => (
+              <button
+                key={p}
+                onClick={() => onSelectPlatform(p)}
+                className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase transition-all ${
+                  platform === p
+                    ? "bg-cyan-500 text-zinc-950 shadow-sm"
+                    : "bg-zinc-900 text-zinc-400 hover:text-white"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Device Mode Toggle & Video Playback State */}
+      <div className="flex items-center justify-between w-full px-2">
+        <div className="flex items-center gap-1.5 bg-zinc-900/90 p-1 rounded-lg border border-zinc-800 text-[11px]">
+          <button
+            onClick={() => setDeviceFrame("phone")}
+            className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+              deviceFrame === "phone" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            Mobile Frame
+          </button>
+          <button
+            onClick={() => setDeviceFrame("card")}
+            className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+              deviceFrame === "card" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            Feed Card
+          </button>
+        </div>
+
+        {/* Video Player Toggle */}
         <button
-          onClick={() => setDeviceFrame("phone")}
-          className={`px-3 py-1 rounded-md font-medium transition-colors ${
-            deviceFrame === "phone" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
+          onClick={() => setIsPlayingVideo(!isPlayingVideo)}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
+            isPlayingVideo
+              ? "bg-red-500/20 text-red-300 border border-red-500/40"
+              : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
           }`}
         >
-          Native Mobile Frame
-        </button>
-        <button
-          onClick={() => setDeviceFrame("card")}
-          className={`px-3 py-1 rounded-md font-medium transition-colors ${
-            deviceFrame === "card" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
-          }`}
-        >
-          Feed Card View
+          <Film className="w-3.5 h-3.5" />
+          <span>{isPlayingVideo ? "Stop Video" : "▶ Play Video"}</span>
         </button>
       </div>
 
@@ -70,12 +120,53 @@ export function DevicePreview({ platform, caption, mediaUrls, options = {} }: De
 
           {/* Render Mockup based on Platform */}
           <div className="flex-1 overflow-y-auto pt-7 pb-4">
-            {platform === Platform.YOUTUBE && <YouTubeMockup caption={caption} media={media} options={options} gdriveInfo={gdriveInfo} />}
-            {platform === Platform.TIKTOK && <TikTokMockup caption={caption} media={media} options={options} gdriveInfo={gdriveInfo} />}
-            {platform === Platform.INSTAGRAM && <InstagramMockup caption={caption} media={media} gdriveInfo={gdriveInfo} />}
+            {platform === Platform.YOUTUBE && (
+              <YouTubeMockup 
+                caption={caption} 
+                media={media} 
+                options={options} 
+                gdriveInfo={gdriveInfo} 
+                isPlayingVideo={isPlayingVideo} 
+                onTogglePlay={() => setIsPlayingVideo(!isPlayingVideo)}
+              />
+            )}
+            {platform === Platform.TIKTOK && (
+              <TikTokMockup 
+                caption={caption} 
+                media={media} 
+                options={options} 
+                gdriveInfo={gdriveInfo} 
+                isPlayingVideo={isPlayingVideo}
+                onTogglePlay={() => setIsPlayingVideo(!isPlayingVideo)}
+              />
+            )}
+            {platform === Platform.INSTAGRAM && (
+              <InstagramMockup 
+                caption={caption} 
+                media={media} 
+                gdriveInfo={gdriveInfo} 
+                isPlayingVideo={isPlayingVideo}
+                onTogglePlay={() => setIsPlayingVideo(!isPlayingVideo)}
+              />
+            )}
             {platform === Platform.TWITTER && <TwitterMockup caption={caption} media={media} options={options} />}
-            {platform === Platform.THREADS && <ThreadsMockup caption={caption} media={media} />}
-            {platform === Platform.FACEBOOK && <FacebookMockup caption={caption} media={media} gdriveInfo={gdriveInfo} />}
+            {platform === Platform.THREADS && (
+              <ThreadsMockup 
+                caption={caption} 
+                media={media} 
+                isPlayingVideo={isPlayingVideo}
+                gdriveInfo={gdriveInfo}
+              />
+            )}
+            {platform === Platform.FACEBOOK && (
+              <FacebookMockup 
+                caption={caption} 
+                media={media} 
+                gdriveInfo={gdriveInfo} 
+                isPlayingVideo={isPlayingVideo}
+                onTogglePlay={() => setIsPlayingVideo(!isPlayingVideo)}
+              />
+            )}
             {platform === Platform.PINTEREST && <PinterestMockup caption={caption} media={media} options={options} />}
           </div>
 
@@ -84,12 +175,53 @@ export function DevicePreview({ platform, caption, mediaUrls, options = {} }: De
         </div>
       ) : (
         <div className="w-full max-w-md bg-zinc-900/90 rounded-2xl border border-zinc-800 p-4 shadow-xl overflow-hidden">
-          {platform === Platform.YOUTUBE && <YouTubeMockup caption={caption} media={media} options={options} gdriveInfo={gdriveInfo} />}
-          {platform === Platform.TIKTOK && <TikTokMockup caption={caption} media={media} options={options} gdriveInfo={gdriveInfo} />}
-          {platform === Platform.INSTAGRAM && <InstagramMockup caption={caption} media={media} gdriveInfo={gdriveInfo} />}
+          {platform === Platform.YOUTUBE && (
+            <YouTubeMockup 
+              caption={caption} 
+              media={media} 
+              options={options} 
+              gdriveInfo={gdriveInfo} 
+              isPlayingVideo={isPlayingVideo}
+              onTogglePlay={() => setIsPlayingVideo(!isPlayingVideo)}
+            />
+          )}
+          {platform === Platform.TIKTOK && (
+            <TikTokMockup 
+              caption={caption} 
+              media={media} 
+              options={options} 
+              gdriveInfo={gdriveInfo} 
+              isPlayingVideo={isPlayingVideo}
+              onTogglePlay={() => setIsPlayingVideo(!isPlayingVideo)}
+            />
+          )}
+          {platform === Platform.INSTAGRAM && (
+            <InstagramMockup 
+              caption={caption} 
+              media={media} 
+              gdriveInfo={gdriveInfo} 
+              isPlayingVideo={isPlayingVideo}
+              onTogglePlay={() => setIsPlayingVideo(!isPlayingVideo)}
+            />
+          )}
           {platform === Platform.TWITTER && <TwitterMockup caption={caption} media={media} options={options} />}
-          {platform === Platform.THREADS && <ThreadsMockup caption={caption} media={media} />}
-          {platform === Platform.FACEBOOK && <FacebookMockup caption={caption} media={media} gdriveInfo={gdriveInfo} />}
+          {platform === Platform.THREADS && (
+            <ThreadsMockup 
+              caption={caption} 
+              media={media} 
+              isPlayingVideo={isPlayingVideo}
+              gdriveInfo={gdriveInfo}
+            />
+          )}
+          {platform === Platform.FACEBOOK && (
+            <FacebookMockup 
+              caption={caption} 
+              media={media} 
+              gdriveInfo={gdriveInfo} 
+              isPlayingVideo={isPlayingVideo}
+              onTogglePlay={() => setIsPlayingVideo(!isPlayingVideo)}
+            />
+          )}
           {platform === Platform.PINTEREST && <PinterestMockup caption={caption} media={media} options={options} />}
         </div>
       )}
@@ -97,27 +229,67 @@ export function DevicePreview({ platform, caption, mediaUrls, options = {} }: De
   );
 }
 
-// 0. YouTube Shorts & Video Simulation with Affiliate Callout
-function YouTubeMockup({ caption, media, options, gdriveInfo }: { caption: string; media: string; options: any; gdriveInfo: any }) {
+// 0. YouTube Shorts & Video Simulation with Affiliate Callout & Video Player
+function YouTubeMockup({ 
+  caption, 
+  media, 
+  options, 
+  gdriveInfo,
+  isPlayingVideo,
+  onTogglePlay
+}: { 
+  caption: string; 
+  media: string; 
+  options: any; 
+  gdriveInfo: any;
+  isPlayingVideo?: boolean;
+  onTogglePlay?: () => void;
+}) {
   const title = options?.title || "Product Review & Walkthrough | Best Deals";
   const pinnedComment = options?.pinnedComment || "👉 Claim 30% OFF with our affiliate link in description!";
 
   return (
     <div className="relative h-full w-full bg-black flex flex-col justify-between overflow-hidden">
-      {/* Background Simulation with fallback handling */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={media}
-        alt="YouTube Shorts"
-        className="absolute inset-0 w-full h-full object-cover opacity-90"
-        onError={(e) => {
-          (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/95 pointer-events-none" />
+      {/* Video or Thumbnail Background */}
+      {isPlayingVideo && gdriveInfo?.embedVideoUrl ? (
+        <iframe
+          src={gdriveInfo.embedVideoUrl}
+          className="absolute inset-0 w-full h-full border-0 z-0 bg-black"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+        />
+      ) : isPlayingVideo && gdriveInfo?.directStreamUrl ? (
+        <video
+          src={gdriveInfo.directStreamUrl}
+          controls
+          autoPlay
+          className="absolute inset-0 w-full h-full object-cover z-0 bg-black"
+        />
+      ) : (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={media}
+            alt="YouTube Shorts"
+            className="absolute inset-0 w-full h-full object-cover opacity-90"
+            onError={(e) => {
+              (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+            }}
+          />
+          {/* Play Overlay Button */}
+          <button
+            onClick={onTogglePlay}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-red-600/90 text-white flex items-center justify-center shadow-xl shadow-red-600/30 hover:scale-110 transition-transform z-10"
+          >
+            <div className="w-0 h-0 border-y-8 border-y-transparent border-l-[14px] border-l-white ml-1" />
+          </button>
+        </>
+      )}
+
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/95 pointer-events-none z-10" />
 
       {/* Top Header */}
-      <div className="relative z-10 flex items-center justify-between px-4 pt-2 text-white text-xs font-semibold">
+      <div className="relative z-20 flex items-center justify-between px-4 pt-2 text-white text-xs font-semibold">
         <span className="flex items-center gap-1.5 text-red-500 font-bold">
           <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
           Shorts
@@ -135,7 +307,7 @@ function YouTubeMockup({ caption, media, options, gdriveInfo }: { caption: strin
       </div>
 
       {/* Right Sidebar Interaction Icons */}
-      <div className="relative z-10 self-end mr-3 flex flex-col items-center gap-4 text-white">
+      <div className="relative z-20 self-end mr-3 flex flex-col items-center gap-4 text-white">
         <div className="flex flex-col items-center">
           <div className="p-2.5 rounded-full bg-black/50 backdrop-blur-md">
             <ThumbsUp className="w-5 h-5 text-white" />
@@ -166,7 +338,7 @@ function YouTubeMockup({ caption, media, options, gdriveInfo }: { caption: strin
       </div>
 
       {/* Bottom Information, Channel & Affiliate Banner */}
-      <div className="relative z-10 px-4 pb-4 text-white space-y-2.5">
+      <div className="relative z-20 px-4 pb-4 text-white space-y-2.5">
         <div className="p-2 rounded-xl bg-red-500/20 border border-red-500/30 backdrop-blur-md text-[10px] text-white space-y-1">
           <div className="flex items-center justify-between font-bold text-red-300">
             <span className="flex items-center gap-1">
@@ -198,23 +370,64 @@ function YouTubeMockup({ caption, media, options, gdriveInfo }: { caption: strin
   );
 }
 
-// 1. TikTok Reels Simulation
-function TikTokMockup({ caption, media, options, gdriveInfo }: { caption: string; media: string; options: any; gdriveInfo: any }) {
+// 1. TikTok Reels Simulation with Video Player
+function TikTokMockup({ 
+  caption, 
+  media, 
+  options, 
+  gdriveInfo,
+  isPlayingVideo,
+  onTogglePlay
+}: { 
+  caption: string; 
+  media: string; 
+  options: any; 
+  gdriveInfo: any;
+  isPlayingVideo?: boolean;
+  onTogglePlay?: () => void;
+}) {
   return (
     <div className="relative h-full w-full bg-black flex flex-col justify-between overflow-hidden">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={media}
-        alt="TikTok Media"
-        className="absolute inset-0 w-full h-full object-cover opacity-90"
-        onError={(e) => {
-          (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90 pointer-events-none" />
+      {/* Video or Thumbnail Background */}
+      {isPlayingVideo && gdriveInfo?.embedVideoUrl ? (
+        <iframe
+          src={gdriveInfo.embedVideoUrl}
+          className="absolute inset-0 w-full h-full border-0 z-0 bg-black"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+        />
+      ) : isPlayingVideo && gdriveInfo?.directStreamUrl ? (
+        <video
+          src={gdriveInfo.directStreamUrl}
+          controls
+          autoPlay
+          className="absolute inset-0 w-full h-full object-cover z-0 bg-black"
+        />
+      ) : (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={media}
+            alt="TikTok Media"
+            className="absolute inset-0 w-full h-full object-cover opacity-90"
+            onError={(e) => {
+              (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+            }}
+          />
+          {/* Play Overlay Button */}
+          <button
+            onClick={onTogglePlay}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-cyan-500/90 text-zinc-950 flex items-center justify-center shadow-xl shadow-cyan-500/30 hover:scale-110 transition-transform z-10"
+          >
+            <div className="w-0 h-0 border-y-8 border-y-transparent border-l-[14px] border-l-zinc-950 ml-1" />
+          </button>
+        </>
+      )}
+
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90 pointer-events-none z-10" />
 
       {/* Top Header */}
-      <div className="relative z-10 flex items-center justify-between px-4 pt-2 text-white/90 text-xs font-semibold">
+      <div className="relative z-20 flex items-center justify-between px-4 pt-2 text-white/90 text-xs font-semibold">
         <span className="text-white/60">LIVE</span>
         <div className="flex gap-4">
           <span className="text-white/60">Following</span>
@@ -224,7 +437,7 @@ function TikTokMockup({ caption, media, options, gdriveInfo }: { caption: string
       </div>
 
       {/* Right Sidebar Interaction Icons */}
-      <div className="relative z-10 self-end mr-3 flex flex-col items-center gap-4 text-white">
+      <div className="relative z-20 self-end mr-3 flex flex-col items-center gap-4 text-white">
         <div className="relative">
           <div className="w-10 h-10 rounded-full border-2 border-white overflow-hidden bg-zinc-700">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -265,7 +478,7 @@ function TikTokMockup({ caption, media, options, gdriveInfo }: { caption: string
       </div>
 
       {/* Bottom Caption & Audio Bar */}
-      <div className="relative z-10 px-4 pb-4 text-white space-y-2">
+      <div className="relative z-20 px-4 pb-4 text-white space-y-2">
         <div className="flex items-center gap-1.5">
           <span className="font-bold text-xs">@acmedaily</span>
           <BadgeCheck className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
@@ -287,8 +500,20 @@ function TikTokMockup({ caption, media, options, gdriveInfo }: { caption: string
   );
 }
 
-// 2. Instagram Feed Simulation
-function InstagramMockup({ caption, media, gdriveInfo }: { caption: string; media: string; gdriveInfo: any }) {
+// 2. Instagram Feed Simulation with Video Player
+function InstagramMockup({ 
+  caption, 
+  media, 
+  gdriveInfo,
+  isPlayingVideo,
+  onTogglePlay
+}: { 
+  caption: string; 
+  media: string; 
+  gdriveInfo: any;
+  isPlayingVideo?: boolean;
+  onTogglePlay?: () => void;
+}) {
   return (
     <div className="bg-black text-white flex flex-col h-full">
       <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-900">
@@ -309,15 +534,40 @@ function InstagramMockup({ caption, media, gdriveInfo }: { caption: string; medi
       </div>
 
       <div className="relative aspect-square w-full bg-zinc-900 overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={media}
-          alt="Instagram Post"
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
-          }}
-        />
+        {isPlayingVideo && gdriveInfo?.embedVideoUrl ? (
+          <iframe
+            src={gdriveInfo.embedVideoUrl}
+            className="w-full h-full border-0 bg-black"
+            allow="autoplay; encrypted-media"
+            allowFullScreen
+          />
+        ) : isPlayingVideo && gdriveInfo?.directStreamUrl ? (
+          <video
+            src={gdriveInfo.directStreamUrl}
+            controls
+            autoPlay
+            className="w-full h-full object-cover bg-black"
+          />
+        ) : (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={media}
+              alt="Instagram Post"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+              }}
+            />
+            {/* Play Overlay Button */}
+            <button
+              onClick={onTogglePlay}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:scale-110 transition-transform"
+            >
+              <div className="w-0 h-0 border-y-6 border-y-transparent border-l-[12px] border-l-white ml-1" />
+            </button>
+          </>
+        )}
         {gdriveInfo?.isGoogleDrive && (
           <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[9px] font-bold text-blue-300">
             Google Drive Stream
@@ -412,7 +662,19 @@ function TwitterMockup({ caption, media, options }: { caption: string; media: st
 }
 
 // 4. Threads Mockup
-function ThreadsMockup({ caption, media }: { caption: string; media: string }) {
+function ThreadsMockup({ 
+  caption, 
+  media,
+  isPlayingVideo,
+  gdriveInfo,
+  onTogglePlay
+}: { 
+  caption: string; 
+  media: string;
+  isPlayingVideo?: boolean;
+  gdriveInfo?: any;
+  onTogglePlay?: () => void;
+}) {
   return (
     <div className="bg-black text-white p-3 space-y-2">
       <div className="flex gap-2.5">
@@ -431,16 +693,42 @@ function ThreadsMockup({ caption, media }: { caption: string; media: string }) {
           </p>
 
           {media && (
-            <div className="rounded-xl overflow-hidden border border-zinc-800/80 max-h-48">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={media}
-                alt="Threads Media"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
-                }}
-              />
+            <div className="rounded-xl overflow-hidden border border-zinc-800/80 max-h-52 relative">
+              {isPlayingVideo && gdriveInfo?.embedVideoUrl ? (
+                <iframe
+                  src={gdriveInfo.embedVideoUrl}
+                  className="w-full h-48 border-0 bg-black"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                />
+              ) : isPlayingVideo && gdriveInfo?.directStreamUrl ? (
+                <video
+                  src={gdriveInfo.directStreamUrl}
+                  controls
+                  autoPlay
+                  className="w-full h-48 object-cover bg-black"
+                />
+              ) : (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={media}
+                    alt="Threads Media"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+                    }}
+                  />
+                  {onTogglePlay && (
+                    <button
+                      onClick={onTogglePlay}
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:scale-110 transition-transform"
+                    >
+                      <div className="w-0 h-0 border-y-5 border-y-transparent border-l-[10px] border-l-white ml-0.5" />
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           )}
 
@@ -457,7 +745,19 @@ function ThreadsMockup({ caption, media }: { caption: string; media: string }) {
 }
 
 // 5. Facebook Feed Mockup
-function FacebookMockup({ caption, media, gdriveInfo }: { caption: string; media: string; gdriveInfo: any }) {
+function FacebookMockup({ 
+  caption, 
+  media, 
+  gdriveInfo,
+  isPlayingVideo,
+  onTogglePlay
+}: { 
+  caption: string; 
+  media: string; 
+  gdriveInfo: any;
+  isPlayingVideo?: boolean;
+  onTogglePlay?: () => void;
+}) {
   return (
     <div className="bg-zinc-950 text-white rounded-lg border border-zinc-900 space-y-2.5">
       <div className="p-3 flex items-center justify-between">
@@ -482,15 +782,39 @@ function FacebookMockup({ caption, media, gdriveInfo }: { caption: string; media
 
       {media && (
         <div className="aspect-video w-full bg-zinc-900 overflow-hidden relative">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={media}
-            alt="FB Media"
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
-            }}
-          />
+          {isPlayingVideo && gdriveInfo?.embedVideoUrl ? (
+            <iframe
+              src={gdriveInfo.embedVideoUrl}
+              className="w-full h-full border-0 bg-black"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+            />
+          ) : isPlayingVideo && gdriveInfo?.directStreamUrl ? (
+            <video
+              src={gdriveInfo.directStreamUrl}
+              controls
+              autoPlay
+              className="w-full h-full object-cover bg-black"
+            />
+          ) : (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={media}
+                alt="FB Media"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+                }}
+              />
+              <button
+                onClick={onTogglePlay}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-blue-600/90 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+              >
+                <div className="w-0 h-0 border-y-6 border-y-transparent border-l-[12px] border-l-white ml-1" />
+              </button>
+            </>
+          )}
           {gdriveInfo?.isGoogleDrive && (
             <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[9px] font-bold text-blue-300">
               Facebook Reel Stream
