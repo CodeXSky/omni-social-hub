@@ -186,8 +186,8 @@ function generatePlatformVariant(
         : trending.suggestedHook;
 
       const punchy = isProduct
-        ? `${viralHook}\n\nTrải nghiệm thực tế em này cực kỳ ưng: ${highlights[0]} ${highlights[1]}\n\n🔗 Link săn sale chính hãng mình ghim ở Bio hoặc Giỏ hàng nha cả nhà! 👇`
-        : `${viralHook}\n\n${cleanCaption.slice(0, 240)}\n\n🔗 Link in bio to claim early access & deal! 👇`;
+        ? `${viralHook}\n\nTrải nghiệm thực tế em này cực kỳ ưng: ${highlights[0]} ${highlights[1]}\n\n🛒 Mua ngay tại giỏ hàng đính kèm trong video nhé cả nhà! 👇`
+        : `${viralHook}\n\n${cleanCaption.slice(0, 240)}\n\n🛒 Mua ngay tại giỏ hàng đính kèm góc video! 👇`;
 
       const hashtags = ["#TikTokMadeMeDoIt", "#TechTok", ...trendingTags, "#FYP"];
       return {

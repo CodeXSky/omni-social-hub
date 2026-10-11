@@ -63,24 +63,34 @@ export function DevicePreview({
 
   return (
     <div className="flex flex-col items-center justify-center w-full space-y-3">
-      {/* Simulator Platform Quick Switcher & Controls */}
+      {/* Simulator Platform Quick Switcher & Controls (Show ALL Platforms) */}
       {availablePlatforms.length > 0 && onSelectPlatform && (
-        <div className="w-full flex items-center justify-between gap-1 pb-1 border-b border-zinc-900">
-          <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Preview Platform:</span>
-          <div className="flex items-center gap-1 overflow-x-auto max-w-[260px] scrollbar-none">
-            {availablePlatforms.map((p) => (
-              <button
-                key={p}
-                onClick={() => onSelectPlatform(p)}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase transition-all ${
-                  platform === p
-                    ? "bg-cyan-500 text-zinc-950 shadow-sm"
-                    : "bg-zinc-900 text-zinc-400 hover:text-white"
-                }`}
-              >
-                {p}
-              </button>
-            ))}
+        <div className="w-full flex flex-col gap-1.5 pb-2 border-b border-zinc-900">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+              Preview Platform (All Channels):
+            </span>
+            <span className="text-[10px] text-zinc-500 font-mono">
+              {availablePlatforms.length} platforms
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 w-full">
+            {availablePlatforms.map((p) => {
+              const isSelected = platform === p;
+              return (
+                <button
+                  key={p}
+                  onClick={() => onSelectPlatform(p)}
+                  className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all shadow-sm ${
+                    isSelected
+                      ? "bg-cyan-500 text-zinc-950 font-black shadow-cyan-500/20 scale-[1.03]"
+                      : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700"
+                  }`}
+                >
+                  {p}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -544,6 +554,21 @@ function TikTokMockup({
 
       {/* Bottom Area: Caption & Native Navigation Bar */}
       <div className="relative z-20 flex flex-col justify-end">
+        {/* TikTok Shop Yellow Basket (Product attached directly in video) */}
+        <div className="mx-3.5 mb-1.5 p-1.5 bg-black/60 backdrop-blur-md rounded-lg border border-amber-400/30 flex items-center justify-between gap-2 max-w-[260px] shadow-lg">
+          <div className="flex items-center gap-1.5 overflow-hidden">
+            <div className="w-5 h-5 rounded bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0">
+              <ShoppingBag className="w-3 h-3 text-amber-400" />
+            </div>
+            <span className="text-[10px] text-amber-300 font-bold truncate">
+              {options?.title || "Sản phẩm đính kèm video"}
+            </span>
+          </div>
+          <span className="text-[9px] px-2 py-0.5 rounded bg-amber-400 text-zinc-950 font-black shrink-0">
+            Mua ngay
+          </span>
+        </div>
+
         {/* Caption & Music Sound */}
         <div className="px-3.5 pb-2 text-white space-y-1 max-w-[265px]">
           <div className="flex items-center gap-1.5">
