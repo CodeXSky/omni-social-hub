@@ -42,8 +42,8 @@ export async function adaptContentWithAI(input: AdaptationInput): Promise<{
     googleDriveUrl,
     nicheOrTopic, 
     tone = "engaging",
-    affiliateLink = "https://omnisocial.io/ref/vip-partner",
-    affiliateProductName = "OmniSocial Hub Pro",
+    affiliateLink = "https://s.shopee.vn/8pmRkckDvo",
+    affiliateProductName,
     useTrendingAI = true,
   } = input;
 
@@ -58,8 +58,8 @@ export async function adaptContentWithAI(input: AdaptationInput): Promise<{
     activeMediaUrl = gdriveResolved.directStreamUrl;
   }
 
-  // Fetch real-time trending insight
-  const trending = getTrendingContext(nicheOrTopic || masterCaption);
+  // Fetch real-time trending insight matching product or topic
+  const trending = getTrendingContext(nicheOrTopic, affiliateProductName || masterCaption);
 
   const results: Partial<Record<Platform, AdaptationResult>> = {};
 
@@ -70,7 +70,7 @@ export async function adaptContentWithAI(input: AdaptationInput): Promise<{
       tone, 
       trending,
       affiliateLink, 
-      affiliateProductName,
+      affiliateProductName || "Sản phẩm ưu đãi",
       activeMediaUrl,
       gdriveResolved
     );
@@ -94,22 +94,38 @@ function generatePlatformVariant(
   gdriveInfo: any
 ): AdaptationResult {
   const cleanCaption = masterCaption.trim();
-  const trendingTags = trending.hashtags.slice(0, 3);
+  const trendingTags = trending.hashtags.slice(0, 4);
+
+  // Determine if this is an affiliate product showcase
+  const isProduct = affiliateProductName && affiliateProductName !== "OmniSocial Hub Pro";
+  const productName = affiliateProductName;
 
   switch (platform) {
     case Platform.YOUTUBE: {
-      const hookTitle = `${trending.suggestedHook.slice(0, 50)} | Full Review`;
-      const description = `${trending.suggestedHook}\n\n${cleanCaption}\n\n` +
+      const hookTitle = isProduct
+        ? `🔥 Review ${productName.slice(0, 45)} | Đáng tiền hay phí tiền?`
+        : `${trending.suggestedHook.slice(0, 50)} | Full Review`;
+
+      const videoBody = isProduct
+        ? `${trending.suggestedHook}\n\n` +
+          `👉 Trải nghiệm thực tế em **${productName}** sau một thời gian sử dụng:\n` +
+          `- Cảm giác cầm nắm công thái học ôm sát lòng bàn tay, giảm áp lực cổ tay rõ rệt.\n` +
+          `- Phím bấm êm ái, click chống ồn làm việc đêm không sợ phiền ai.\n` +
+          `- Kết nối Bluetooth mượt mà giữa Laptop và PC.\n\n` +
+          `📌 Link sản phẩm chính hãng & săn voucher độc quyền mình để ở dưới nhé!`
+        : `${trending.suggestedHook}\n\n${cleanCaption}`;
+
+      const description = `${videoBody}\n\n` +
         `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-        `🎁 SPECIAL DEAL / AFFILIATE LINK:\n` +
-        `👉 Get ${affiliateProductName} (30% OFF Limited Time): ${affiliateLink}\n` +
+        `🎁 LINK MUA SẢN PHẨM / ƯU ĐÃI ĐỘC QUYỀN:\n` +
+        `👉 Mua ngay ${productName} (Đang có Flash Sale): ${affiliateLink}\n` +
         `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
-        `📌 VIDEO CHAPTERS:\n` +
-        `0:00 - ${trending.topic} (Overview)\n` +
-        `0:45 - Live System Walkthrough\n` +
-        `1:35 - How To Set Up Google Drive Video Publishing\n` +
-        `2:20 - Final Verdict & Claim Your Deal\n\n` +
-        `⚠️ FTC Disclosure: Some links above are affiliate links. If you buy through them, we may earn a commission with no added cost to you.\n\n` +
+        `📌 NỘI DUNG VIDEO / TIMESTAMPS:\n` +
+        `0:00 - Mở hộp & Trải nghiệm thực tế\n` +
+        `0:40 - Chi tiết thiết kế & Tính năng nổi bật\n` +
+        `1:20 - Ưu điểm & Nhược điểm cần lưu ý\n` +
+        `2:00 - Hướng dẫn săn voucher giảm giá\n\n` +
+        `⚠️ Lưu ý: Video có gắn link tiếp thị liên kết (affiliate). Khi bạn mua qua link, kênh sẽ nhận một phần hoa hồng nhỏ để duy trì sản xuất nội dung hữu ích.\n\n` +
         `#Shorts #YouTubeShorts ${trendingTags.join(" ")} #Affiliate`;
 
       const hashtags = ["#Shorts", "#YouTubeShorts", ...trendingTags, "#Affiliate"];
@@ -117,12 +133,12 @@ function generatePlatformVariant(
         platform: Platform.YOUTUBE,
         caption: description,
         hashtags,
-        tips: `Trending surge match: "${trending.topic}". Includes 3-second hook, timestamps, and Google Drive video stream container.`,
+        tips: `Bắt trend "${trending.topic}". Tối ưu 3 giây đầu cho YouTube Shorts, ghim link Shopee & timestamps mô tả.`,
         videoStreamUrl: mediaUrl,
         metadata: {
           title: hookTitle,
           isShorts: true,
-          pinnedComment: `🔥 Claim your discount on ${affiliateProductName} here: ${affiliateLink} (Limited time offer!) 👇`,
+          pinnedComment: `🔥 Link mua ${productName} chính hãng giá ưu đãi nhất ở đây nhé cả nhà: ${affiliateLink} (Nhớ áp mã voucher giảm giá nha!) 👇`,
           affiliateLink,
           aspectRatio: "9:16 Shorts or 16:9 Landscape",
           sourceType: gdriveInfo?.isGoogleDrive ? "GOOGLE_DRIVE_STREAM" : "DIRECT_URL",
@@ -131,18 +147,24 @@ function generatePlatformVariant(
     }
 
     case Platform.TIKTOK: {
-      const viralHook = trending.suggestedHook;
-      const punchy = `${viralHook}\n\n${cleanCaption.slice(0, 240)}\n\n🔗 Link in bio to claim early access & deal! 👇`;
+      const viralHook = isProduct
+        ? `🔥 ${trending.suggestedHook} "${productName.slice(0, 35)}..."`
+        : trending.suggestedHook;
+
+      const punchy = isProduct
+        ? `${viralHook}\n\nAi ngồi máy tính nhiều mà mỏi cổ tay thì cứu tinh đây rồi. Chuột ôm tay 57 độ cực chuẩn, bấm êm ru không tiếng click.\n\n🔗 Link săn sale chính hãng mình ghim ở Bio hoặc Giỏ hàng nha cả nhà! 👇`
+        : `${viralHook}\n\n${cleanCaption.slice(0, 240)}\n\n🔗 Link in bio to claim early access & deal! 👇`;
+
       const hashtags = ["#TikTokMadeMeDoIt", "#TechTok", ...trendingTags, "#FYP"];
       return {
         platform: Platform.TIKTOK,
         caption: `${punchy}\n\n${hashtags.join(" ")}`,
         hashtags,
-        tips: `TikTok Creative Center Trend: "${trending.urgency}". Optimized for 9:16 vertical video pull URL.`,
+        tips: `TikTok Trend Center: "${trending.urgency}". Chuẩn video dọc 9:16 kéo từ Google Drive, CTA kêu gọi click bio/giỏ hàng.`,
         videoStreamUrl: mediaUrl,
         metadata: {
           hook: viralHook,
-          soundRecommendation: "Trending Beat: Lo-Fi Synth 2026 Wave",
+          soundRecommendation: "Trending Beat: Lo-Fi Synth / Work Beats",
           aspectRatio: "9:16 Vertical Video",
           sourceType: gdriveInfo?.isGoogleDrive ? "GOOGLE_DRIVE_PULL_URL" : "DIRECT_URL",
         },
@@ -150,13 +172,23 @@ function generatePlatformVariant(
     }
 
     case Platform.INSTAGRAM: {
-      const igCaption = `${trending.suggestedHook}\n\n${cleanCaption}\n.\n.\n👉 Click link in bio to get an exclusive deal! ✨\nDouble tap if this resonated! ❤️\nSave this Reel for later 📌\nShare with a friend! 🚀\n\n#InstagramReels #CreatorEconomy ${trendingTags.join(" ")} #DailyHustle`;
-      const hashtags = ["#InstagramReels", "#CreatorEconomy", ...trendingTags, "#MarketingTips"];
+      const igCaption = isProduct
+        ? `${trending.suggestedHook} ✨\n\nNâng cấp góc làm việc với em **${productName}** siêu xịn mịn!\n.\n.` +
+          `✅ Cải thiện tư thế cầm tay tự nhiên\n` +
+          `✅ Switch êm ái, yên tĩnh tuyệt đối\n` +
+          `✅ Màu sắc thẩm mỹ, setup lên bàn cực sang\n.\n.` +
+          `👉 Link mua chính hãng + mã giảm giá mình để ở Link in Bio nhé! 🛒\n` +
+          `❤️ Thả tim nếu bạn cũng mê góc setup công thái học!\n` +
+          `📌 Lưu lại bài viết khi cần săn sale nhé!\n\n` +
+          `#InstagramReels #DeskSetup ${trendingTags.join(" ")}`
+        : `${trending.suggestedHook}\n\n${cleanCaption}\n.\n.\n👉 Click link in bio to get an exclusive deal! ✨\nDouble tap if this resonated! ❤️\nSave this Reel for later 📌\nShare with a friend! 🚀\n\n#InstagramReels #CreatorEconomy ${trendingTags.join(" ")} #DailyHustle`;
+
+      const hashtags = ["#InstagramReels", "#DeskSetup", ...trendingTags, "#ShopeeHaul"];
       return {
         platform: Platform.INSTAGRAM,
         caption: igCaption,
         hashtags,
-        tips: "Optimized for Instagram Reels algorithm with 3 CTAs (Save, Share, Bio Link) and Google Drive video container.",
+        tips: "Định dạng Instagram Reels với 3 nút kêu gọi thuật toán (Save, Share, Click Bio Link).",
         videoStreamUrl: mediaUrl,
         metadata: {
           idealMedia: "Reel (9:16) or Carousel",
@@ -167,13 +199,23 @@ function generatePlatformVariant(
     }
 
     case Platform.FACEBOOK: {
-      const structuredPost = `📢 TRENDING IN ${trending.category.toUpperCase()}\n\n${cleanCaption}\n\n💡 Key takeaways from this shift:\n1. Keeps you ahead of emerging shifts\n2. Streamlines multi-channel execution\n\n👉 Test it out and grab your deal here: ${affiliateLink}\n\nSave this post and tag a friend who needs this!`;
-      const hashtags = ["#Reels", "#BusinessGrowth", ...trendingTags];
+      const structuredPost = isProduct
+        ? `📢 GÓC REVIEW ĐỒ CÔNG NGHỆ & SETUP BÀN LÀM VIỆC\n\n` +
+          `Đã tìm ra giải pháp cho anh chị em dân văn phòng ngồi 8-10 tiếng bị mỏi cổ tay: **${productName}**!\n\n` +
+          `💡 Trải nghiệm nhanh:\n` +
+          `1. Cầm góc 57 độ tự nhiên, không bị vặn cơ tay như chuột thường.\n` +
+          `2. Bấm siêu êm, độ nhạy cao, pin dùng cực lâu.\n` +
+          `3. Kết nối Bluetooth nhanh chóng cho cả Windows và Mac.\n\n` +
+          `👉 Anh chị em quan tâm có thể săn sale chính hãng tại link này nhé: ${affiliateLink}\n\n` +
+          `Lưu bài viết hoặc tag đồng nghiệp cùng cơ quan vào tham khảo nhé cả nhà!`
+        : `📢 TRENDING IN ${trending.category.toUpperCase()}\n\n${cleanCaption}\n\n💡 Key takeaways from this shift:\n1. Keeps you ahead of emerging shifts\n2. Streamlines multi-channel execution\n\n👉 Test it out and grab your deal here: ${affiliateLink}\n\nSave this post and tag a friend who needs this!`;
+
+      const hashtags = ["#Reels", "#GocCongNghe", ...trendingTags];
       return {
         platform: Platform.FACEBOOK,
         caption: structuredPost,
         hashtags,
-        tips: "Facebook Reels & Feed format with high dwell-time paragraph spacing and direct preview card link.",
+        tips: "Chuẩn bài viết Facebook Reels / Post dài tăng thời gian dừng đọc (dwell-time) kèm link Shopee rõ ràng.",
         videoStreamUrl: mediaUrl,
         metadata: {
           hasCTA: true,
@@ -184,44 +226,36 @@ function generatePlatformVariant(
     }
 
     case Platform.TWITTER: {
-      const isThreadNeeded = cleanCaption.length > 200;
-      let threadParts: string[] = [];
+      const shortTweet = isProduct
+        ? `Dân văn phòng mỏi cổ tay nhất định phải đổi qua chuột công thái học: ${productName.slice(0, 40)}... Cầm siêu êm, giảm áp lực tay rõ rệt! 👉 ${affiliateLink} ${trendingTags.slice(0, 2).join(" ")}`
+        : `${cleanCaption.slice(0, 180)} 👉 ${affiliateLink} ${trendingTags.slice(0, 2).join(" ")}`;
 
-      if (isThreadNeeded) {
-        threadParts = [
-          `🧵 1/3 Trending now in tech: ${trending.topic}\n\n${cleanCaption.slice(0, 160)}... ⬇️`,
-          `2/3 The core insight:\n\n${cleanCaption.slice(160, 380)}`,
-          `3/3 Key Takeaway & Discount:\n\nGet early access here: ${affiliateLink}\n\n• Retweet 1st tweet\n• Follow for more daily! 🚀`,
-        ];
-      }
-
-      const shortTweet = `${cleanCaption.slice(0, 180)} 👉 ${affiliateLink} ${trendingTags.slice(0, 2).join(" ")}`;
-      const hashtags = ["#BuildInPublic", ...trendingTags];
+      const hashtags = ["#TechReview", ...trendingTags];
 
       return {
         platform: Platform.TWITTER,
-        caption: isThreadNeeded ? threadParts[0] : shortTweet,
+        caption: shortTweet,
         hashtags,
-        tips: isThreadNeeded
-          ? "Exceeds 280 characters: Formatted as a high-retention 3-part thread riding current viral topic."
-          : "Optimized for high CTR with sharp punchlines and direct affiliate link within 280 chars.",
+        tips: "Tối ưu hóa dưới 280 ký tự, lời gọi hành động súc tích dẫn thẳng vào link affiliate Shopee.",
         videoStreamUrl: mediaUrl,
         metadata: {
-          isThread: isThreadNeeded,
-          threadParts,
-          characterCount: isThreadNeeded ? threadParts[0].length : shortTweet.length,
+          isThread: false,
+          characterCount: shortTweet.length,
         },
       };
     }
 
     case Platform.THREADS: {
-      const dialogueText = `${trending.suggestedHook}\n\n${cleanCaption.slice(0, 360)}\n\nTool link: ${affiliateLink}\n\nWhat’s your perspective on this? Let’s chat in the replies 👇`;
+      const dialogueText = isProduct
+        ? `${trending.suggestedHook}\n\nSau 1 tháng dùng thử ${productName}, mình nhận ra trước giờ cổ tay mình phải chịu khổ quá nhiều. Cầm em này xong không muốn quay lại chuột thường luôn 🥲\n\nCó bạn nào trong này cũng đang dùng chuột dọc không? Chia sẻ cảm nhận với mình bên dưới nhé 👇\n\n(Link mua chính hãng cho ai cần: ${affiliateLink})`
+        : `${trending.suggestedHook}\n\n${cleanCaption.slice(0, 360)}\n\nTool link: ${affiliateLink}\n\nWhat’s your perspective on this? Let’s chat in the replies 👇`;
+
       const hashtags = ["#threadscommunity", ...trendingTags];
       return {
         platform: Platform.THREADS,
         caption: dialogueText,
         hashtags,
-        tips: "Conversational prompt designed to trigger algorithmic comment chain ranking on Threads.",
+        tips: "Giọng văn tâm sự gần gũi kích thích tương tác bình luận tự nhiên của thuật toán Threads.",
         videoStreamUrl: mediaUrl,
         metadata: {
           characterLimit: 500,
@@ -231,19 +265,22 @@ function generatePlatformVariant(
     }
 
     case Platform.PINTEREST: {
-      const title = cleanCaption.split(".")[0]?.slice(0, 75) || trending.topic;
-      const pinDesc = `${trending.suggestedHook} | ${cleanCaption.slice(0, 300)} | Click to claim your 30% discount today!`;
-      const hashtags = ["#Inspiration", ...trendingTags];
+      const title = isProduct ? `Gợi Ý Setup Góc Làm Việc: ${productName.slice(0, 50)}` : cleanCaption.split(".")[0]?.slice(0, 75) || trending.topic;
+      const pinDesc = isProduct
+        ? `${trending.suggestedHook} Nâng cấp góc làm việc công thái học với ${productName}. Thiết kế tối giản, bảo vệ cổ tay. Click để săn voucher giảm giá độc quyền ngay hôm nay!`
+        : `${trending.suggestedHook} | ${cleanCaption.slice(0, 300)} | Click to claim your 30% discount today!`;
+
+      const hashtags = ["#Inspiration", "#DeskSetup", ...trendingTags];
 
       return {
         platform: Platform.PINTEREST,
         caption: pinDesc,
         hashtags,
-        tips: "SEO-rich Pin Description with buyer-intent keywords and target destination link.",
+        tips: "Từ khóa SEO Pinterest nhắm vào tệp tìm kiếm Desk Setup & Công thái học, liên kết đích dẫn thẳng về Shopee.",
         videoStreamUrl: mediaUrl,
         metadata: {
           title,
-          boardRecommendation: "Resources & Trends 2026",
+          boardRecommendation: "Góc Làm Việc & Đồ Công Nghệ 2026",
           destinationLink: affiliateLink,
           aspectRatio: "2:3 Vertical Graphic (1000x1500)",
         },

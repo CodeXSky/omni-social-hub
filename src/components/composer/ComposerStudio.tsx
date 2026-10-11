@@ -92,16 +92,28 @@ export function ComposerStudio() {
       });
       const data = await res.json();
       if (data.success && data.product) {
-        setFetchedProduct(data.product);
-        setAffiliateProductName(data.product.title);
-        // Automatically inject rich product context into master caption if brief
-        if (masterCaption.length < 150) {
-          setMasterCaption(
-            `${data.product.title}: ${data.product.description}`
-          );
+        const prod = data.product;
+        setFetchedProduct(prod);
+        setAffiliateProductName(prod.title);
+        setAffiliateLink(affiliateProductUrl);
+
+        // Update campaign title and master caption with the product
+        setMasterTitle(`Review & Trải Nghiệm: ${prod.title}`);
+        setMasterCaption(
+          `Review trải nghiệm thực tế ${prod.title}. Đánh giá chi tiết ưu nhược điểm, độ bền và cảm giác sử dụng thực tế: ${prod.description}`
+        );
+
+        // Auto select best-matching trending topic
+        if (prod.title.toLowerCase().includes("chuột") || prod.title.toLowerCase().includes("công thái học") || prod.title.toLowerCase().includes("logitech")) {
+          setCurrentTrendingTopic("Ergonomic Desk Setup & Anti-Fatigue Tech Gadgets");
+          setTrendingUrgency("EXPLODING 🔥");
+        } else {
+          setCurrentTrendingTopic("Shopee Hot Deals & Must-Have Tech Gadgets 2026");
+          setTrendingUrgency("EXPLODING 🔥");
         }
-        setSuccessBanner(`🎯 Fetched Product: "${data.product.title.slice(0, 45)}..."! AI will craft custom affiliate copy.`);
-        setTimeout(() => setSuccessBanner(null), 4500);
+
+        setSuccessBanner(`🎯 Đã tải thông tin "${prod.title.slice(0, 45)}..."! Bấm "Generate Trending AI Copy" để tạo bài viết affiliate.`);
+        setTimeout(() => setSuccessBanner(null), 5000);
       }
     } catch (err) {
       console.error(err);
