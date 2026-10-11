@@ -153,7 +153,11 @@ export function DevicePreview({
           )}
 
           {/* Render Mockup based on Platform */}
-          <div className="flex-1 overflow-hidden relative">
+          <div className={`flex-1 relative ${
+            (platform === Platform.YOUTUBE || platform === Platform.TIKTOK)
+              ? "overflow-hidden"
+              : "overflow-y-auto scrollbar-none"
+          }`}>
             {platform === Platform.YOUTUBE && (
               <YouTubeMockup 
                 caption={caption} 

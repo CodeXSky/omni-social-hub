@@ -591,10 +591,15 @@ export function ComposerStudio() {
            ======================================================== */}
         <div className="col-span-4 p-5 overflow-y-auto bg-zinc-950 flex flex-col items-center justify-start space-y-4">
           <div className="w-full flex items-center justify-between pb-2 border-b border-zinc-800/80">
-            <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              3. Native Live Simulation
-            </span>
+              <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                3. Native Simulation:
+              </span>
+              <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                {activeConfig.name}
+              </span>
+            </div>
             <span className="text-[10px] text-zinc-500 font-mono">100% VISUAL ACCURACY</span>
           </div>
 
