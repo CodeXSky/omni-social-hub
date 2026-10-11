@@ -11,6 +11,14 @@ export interface VariantDraft {
   isManuallyEdited: boolean;
 }
 
+export interface FetchedProductData {
+  url: string;
+  title: string;
+  description: string;
+  image: string;
+  brand: string;
+}
+
 interface ComposerState {
   // Master post state
   masterTitle: string;
@@ -21,8 +29,13 @@ interface ComposerState {
   scheduledAt: string | null;
   tone: "engaging" | "professional" | "viral_edgy" | "educational" | "casual";
   selectedPlatforms: Platform[];
+
+  // Affiliate & Product Fetcher state
+  affiliateProductUrl: string;
   affiliateLink: string;
   affiliateProductName: string;
+  fetchedProduct: FetchedProductData | null;
+  isFetchingProduct: boolean;
 
   // Real-time trending context
   currentTrendingTopic: string;
@@ -43,8 +56,11 @@ interface ComposerState {
   removeMediaUrl: (index: number) => void;
   setScheduledAt: (date: string | null) => void;
   setTone: (tone: any) => void;
+  setAffiliateProductUrl: (url: string) => void;
   setAffiliateLink: (link: string) => void;
   setAffiliateProductName: (name: string) => void;
+  setFetchedProduct: (prod: FetchedProductData | null) => void;
+  setIsFetchingProduct: (val: boolean) => void;
   setCurrentTrendingTopic: (topic: string) => void;
   setTrendingUrgency: (urgency: string) => void;
   togglePlatform: (platform: Platform) => void;
@@ -97,8 +113,20 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
   scheduledAt: null,
   tone: "viral_edgy",
   selectedPlatforms: [...ALL_PLATFORMS],
+
+  // Product & Affiliate state
+  affiliateProductUrl: "https://omnisocial.io/product/pro-edition",
   affiliateLink: "https://omnisocial.io/ref/vip-partner",
   affiliateProductName: "OmniSocial Hub Pro",
+  fetchedProduct: {
+    url: "https://omnisocial.io/product/pro-edition",
+    title: "OmniSocial Hub Pro Edition - All-in-One Multi-Channel Management",
+    description: "Streamline multi-platform posting to YouTube, TikTok, and Instagram with AI automation.",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&auto=format&fit=crop&q=80",
+    brand: "OmniSocial",
+  },
+  isFetchingProduct: false,
+
   currentTrendingTopic: "Autonomous AI Agents & Omni-Channel Automation",
   trendingUrgency: "EXPLODING 🔥",
   activeVariantTab: Platform.YOUTUBE,
@@ -142,8 +170,11 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
   },
   setScheduledAt: (scheduledAt) => set({ scheduledAt }),
   setTone: (tone) => set({ tone }),
+  setAffiliateProductUrl: (affiliateProductUrl) => set({ affiliateProductUrl }),
   setAffiliateLink: (affiliateLink) => set({ affiliateLink }),
   setAffiliateProductName: (affiliateProductName) => set({ affiliateProductName }),
+  setFetchedProduct: (fetchedProduct) => set({ fetchedProduct }),
+  setIsFetchingProduct: (isFetchingProduct) => set({ isFetchingProduct }),
   setCurrentTrendingTopic: (currentTrendingTopic) => set({ currentTrendingTopic }),
   setTrendingUrgency: (trendingUrgency) => set({ trendingUrgency }),
   togglePlatform: (platform) => {

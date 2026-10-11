@@ -18,8 +18,10 @@ import {
   ThumbsUp,
   ThumbsDown,
   ShoppingBag,
-  Tag
+  Tag,
+  Film
 } from "lucide-react";
+import { parseGoogleDriveUrl } from "@/lib/gdrive-resolver";
 
 interface DevicePreviewProps {
   platform: Platform;
@@ -30,7 +32,11 @@ interface DevicePreviewProps {
 
 export function DevicePreview({ platform, caption, mediaUrls, options = {} }: DevicePreviewProps) {
   const [deviceFrame, setDeviceFrame] = useState<"phone" | "card">("phone");
-  const media = mediaUrls[0] || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80";
+  const rawMedia = mediaUrls[0] || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80";
+
+  // Check if media is Google Drive
+  const gdriveInfo = parseGoogleDriveUrl(rawMedia);
+  const media = gdriveInfo.previewThumbnailUrl || rawMedia;
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
@@ -64,12 +70,12 @@ export function DevicePreview({ platform, caption, mediaUrls, options = {} }: De
 
           {/* Render Mockup based on Platform */}
           <div className="flex-1 overflow-y-auto pt-7 pb-4">
-            {platform === Platform.YOUTUBE && <YouTubeMockup caption={caption} media={media} options={options} />}
-            {platform === Platform.TIKTOK && <TikTokMockup caption={caption} media={media} options={options} />}
-            {platform === Platform.INSTAGRAM && <InstagramMockup caption={caption} media={media} />}
+            {platform === Platform.YOUTUBE && <YouTubeMockup caption={caption} media={media} options={options} gdriveInfo={gdriveInfo} />}
+            {platform === Platform.TIKTOK && <TikTokMockup caption={caption} media={media} options={options} gdriveInfo={gdriveInfo} />}
+            {platform === Platform.INSTAGRAM && <InstagramMockup caption={caption} media={media} gdriveInfo={gdriveInfo} />}
             {platform === Platform.TWITTER && <TwitterMockup caption={caption} media={media} options={options} />}
             {platform === Platform.THREADS && <ThreadsMockup caption={caption} media={media} />}
-            {platform === Platform.FACEBOOK && <FacebookMockup caption={caption} media={media} />}
+            {platform === Platform.FACEBOOK && <FacebookMockup caption={caption} media={media} gdriveInfo={gdriveInfo} />}
             {platform === Platform.PINTEREST && <PinterestMockup caption={caption} media={media} options={options} />}
           </div>
 
@@ -78,12 +84,12 @@ export function DevicePreview({ platform, caption, mediaUrls, options = {} }: De
         </div>
       ) : (
         <div className="w-full max-w-md bg-zinc-900/90 rounded-2xl border border-zinc-800 p-4 shadow-xl overflow-hidden">
-          {platform === Platform.YOUTUBE && <YouTubeMockup caption={caption} media={media} options={options} />}
-          {platform === Platform.TIKTOK && <TikTokMockup caption={caption} media={media} options={options} />}
-          {platform === Platform.INSTAGRAM && <InstagramMockup caption={caption} media={media} />}
+          {platform === Platform.YOUTUBE && <YouTubeMockup caption={caption} media={media} options={options} gdriveInfo={gdriveInfo} />}
+          {platform === Platform.TIKTOK && <TikTokMockup caption={caption} media={media} options={options} gdriveInfo={gdriveInfo} />}
+          {platform === Platform.INSTAGRAM && <InstagramMockup caption={caption} media={media} gdriveInfo={gdriveInfo} />}
           {platform === Platform.TWITTER && <TwitterMockup caption={caption} media={media} options={options} />}
           {platform === Platform.THREADS && <ThreadsMockup caption={caption} media={media} />}
-          {platform === Platform.FACEBOOK && <FacebookMockup caption={caption} media={media} />}
+          {platform === Platform.FACEBOOK && <FacebookMockup caption={caption} media={media} gdriveInfo={gdriveInfo} />}
           {platform === Platform.PINTEREST && <PinterestMockup caption={caption} media={media} options={options} />}
         </div>
       )}
@@ -92,15 +98,22 @@ export function DevicePreview({ platform, caption, mediaUrls, options = {} }: De
 }
 
 // 0. YouTube Shorts & Video Simulation with Affiliate Callout
-function YouTubeMockup({ caption, media, options }: { caption: string; media: string; options: any }) {
+function YouTubeMockup({ caption, media, options, gdriveInfo }: { caption: string; media: string; options: any; gdriveInfo: any }) {
   const title = options?.title || "Product Review & Walkthrough | Best Deals";
   const pinnedComment = options?.pinnedComment || "👉 Claim 30% OFF with our affiliate link in description!";
 
   return (
     <div className="relative h-full w-full bg-black flex flex-col justify-between overflow-hidden">
-      {/* Background Simulation */}
+      {/* Background Simulation with fallback handling */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={media} alt="YouTube Shorts" className="absolute inset-0 w-full h-full object-cover opacity-90" />
+      <img
+        src={media}
+        alt="YouTube Shorts"
+        className="absolute inset-0 w-full h-full object-cover opacity-90"
+        onError={(e) => {
+          (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+        }}
+      />
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/95 pointer-events-none" />
 
       {/* Top Header */}
@@ -110,6 +123,11 @@ function YouTubeMockup({ caption, media, options }: { caption: string; media: st
           Shorts
         </span>
         <div className="flex items-center gap-2">
+          {gdriveInfo?.isGoogleDrive && (
+            <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[9px] font-bold flex items-center gap-1">
+              <Film className="w-2.5 h-2.5" /> GDrive Stream
+            </span>
+          )}
           <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-bold flex items-center gap-1">
             <ShoppingBag className="w-2.5 h-2.5" /> Affiliate Active
           </span>
@@ -149,13 +167,12 @@ function YouTubeMockup({ caption, media, options }: { caption: string; media: st
 
       {/* Bottom Information, Channel & Affiliate Banner */}
       <div className="relative z-10 px-4 pb-4 text-white space-y-2.5">
-        {/* Affiliate Product Pinned Callout */}
         <div className="p-2 rounded-xl bg-red-500/20 border border-red-500/30 backdrop-blur-md text-[10px] text-white space-y-1">
           <div className="flex items-center justify-between font-bold text-red-300">
             <span className="flex items-center gap-1">
               <Tag className="w-3 h-3 text-red-400" /> Pinned Affiliate Deal:
             </span>
-            <span className="text-amber-300">30% OFF CODE</span>
+            <span className="text-amber-300">LIMITED DEAL</span>
           </div>
           <p className="line-clamp-1 text-zinc-200">{pinnedComment}</p>
         </div>
@@ -182,11 +199,18 @@ function YouTubeMockup({ caption, media, options }: { caption: string; media: st
 }
 
 // 1. TikTok Reels Simulation
-function TikTokMockup({ caption, media, options }: { caption: string; media: string; options: any }) {
+function TikTokMockup({ caption, media, options, gdriveInfo }: { caption: string; media: string; options: any; gdriveInfo: any }) {
   return (
     <div className="relative h-full w-full bg-black flex flex-col justify-between overflow-hidden">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={media} alt="TikTok Media" className="absolute inset-0 w-full h-full object-cover opacity-90" />
+      <img
+        src={media}
+        alt="TikTok Media"
+        className="absolute inset-0 w-full h-full object-cover opacity-90"
+        onError={(e) => {
+          (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+        }}
+      />
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90 pointer-events-none" />
 
       {/* Top Header */}
@@ -245,6 +269,11 @@ function TikTokMockup({ caption, media, options }: { caption: string; media: str
         <div className="flex items-center gap-1.5">
           <span className="font-bold text-xs">@acmedaily</span>
           <BadgeCheck className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+          {gdriveInfo?.isGoogleDrive && (
+            <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-500/30 text-blue-300 font-mono">
+              GDrive
+            </span>
+          )}
         </div>
         <p className="text-[11px] line-clamp-3 text-zinc-100 leading-snug">
           {caption || "Write your viral TikTok hook here..."}
@@ -259,7 +288,7 @@ function TikTokMockup({ caption, media, options }: { caption: string; media: str
 }
 
 // 2. Instagram Feed Simulation
-function InstagramMockup({ caption, media }: { caption: string; media: string }) {
+function InstagramMockup({ caption, media, gdriveInfo }: { caption: string; media: string; gdriveInfo: any }) {
   return (
     <div className="bg-black text-white flex flex-col h-full">
       <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-900">
@@ -273,7 +302,7 @@ function InstagramMockup({ caption, media }: { caption: string; media: string })
               <span className="text-xs font-bold">acme.official</span>
               <BadgeCheck className="w-3 h-3 text-blue-400 fill-blue-400" />
             </div>
-            <div className="text-[9px] text-zinc-400">Sponsored • Audio original</div>
+            <div className="text-[9px] text-zinc-400">Reel • Audio original</div>
           </div>
         </div>
         <MoreHorizontal className="w-4 h-4 text-zinc-400" />
@@ -281,7 +310,19 @@ function InstagramMockup({ caption, media }: { caption: string; media: string })
 
       <div className="relative aspect-square w-full bg-zinc-900 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={media} alt="Instagram Post" className="w-full h-full object-cover" />
+        <img
+          src={media}
+          alt="Instagram Post"
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+          }}
+        />
+        {gdriveInfo?.isGoogleDrive && (
+          <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[9px] font-bold text-blue-300">
+            Google Drive Stream
+          </div>
+        )}
       </div>
 
       <div className="p-3 space-y-2">
@@ -338,7 +379,14 @@ function TwitterMockup({ caption, media, options }: { caption: string; media: st
           {media && (
             <div className="rounded-xl overflow-hidden border border-zinc-800 max-h-48 mt-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={media} alt="Tweet Media" className="w-full h-full object-cover" />
+              <img
+                src={media}
+                alt="Tweet Media"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+                }}
+              />
             </div>
           )}
 
@@ -385,7 +433,14 @@ function ThreadsMockup({ caption, media }: { caption: string; media: string }) {
           {media && (
             <div className="rounded-xl overflow-hidden border border-zinc-800/80 max-h-48">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={media} alt="Threads Media" className="w-full h-full object-cover" />
+              <img
+                src={media}
+                alt="Threads Media"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+                }}
+              />
             </div>
           )}
 
@@ -402,7 +457,7 @@ function ThreadsMockup({ caption, media }: { caption: string; media: string }) {
 }
 
 // 5. Facebook Feed Mockup
-function FacebookMockup({ caption, media }: { caption: string; media: string }) {
+function FacebookMockup({ caption, media, gdriveInfo }: { caption: string; media: string; gdriveInfo: any }) {
   return (
     <div className="bg-zinc-950 text-white rounded-lg border border-zinc-900 space-y-2.5">
       <div className="p-3 flex items-center justify-between">
@@ -415,7 +470,7 @@ function FacebookMockup({ caption, media }: { caption: string; media: string }) 
               Acme Global Official
               <BadgeCheck className="w-3 h-3 text-blue-500 fill-blue-500" />
             </div>
-            <div className="text-[10px] text-zinc-500">Sponsored · 🌍 Public</div>
+            <div className="text-[10px] text-zinc-500">Facebook Reel · 🌍 Public</div>
           </div>
         </div>
         <MoreHorizontal className="w-4 h-4 text-zinc-500" />
@@ -426,9 +481,21 @@ function FacebookMockup({ caption, media }: { caption: string; media: string }) 
       </p>
 
       {media && (
-        <div className="aspect-video w-full bg-zinc-900 overflow-hidden">
+        <div className="aspect-video w-full bg-zinc-900 overflow-hidden relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={media} alt="FB Media" className="w-full h-full object-cover" />
+          <img
+            src={media}
+            alt="FB Media"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+            }}
+          />
+          {gdriveInfo?.isGoogleDrive && (
+            <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[9px] font-bold text-blue-300">
+              Facebook Reel Stream
+            </div>
+          )}
         </div>
       )}
 
@@ -447,7 +514,14 @@ function PinterestMockup({ caption, media, options }: { caption: string; media: 
     <div className="bg-zinc-950 p-2 space-y-2">
       <div className="rounded-2xl overflow-hidden relative shadow-lg group">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={media} alt="Pin" className="w-full object-cover rounded-2xl" />
+        <img
+          src={media}
+          alt="Pin"
+          className="w-full object-cover rounded-2xl"
+          onError={(e) => {
+            (e.target as any).src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200";
+          }}
+        />
         <div className="absolute top-2 right-2">
           <button className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-full shadow-lg">
             Save

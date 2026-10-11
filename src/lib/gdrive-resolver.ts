@@ -1,8 +1,16 @@
 /**
- * Google Drive Video URL Converter & Validator
- * Converts shareable Google Drive links (e.g. https://drive.google.com/file/d/FILE_ID/view?usp=sharing)
- * into high-speed direct streamable/downloadable endpoints for social media API containers
- * (TikTok pull URL, Meta Graph API video_url, YouTube API upload streams).
+ * Google Drive Video URL Converter & Robust Stream Resolver
+ * Handles all Google Drive URL formats:
+ * - https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+ * - https://drive.google.com/file/d/FILE_ID/view
+ * - https://drive.google.com/open?id=FILE_ID
+ * - https://drive.google.com/uc?id=FILE_ID&export=download
+ * - Raw FILE_ID (e.g. 1A2B3C4D5E6F7G8H9I0J)
+ *
+ * Generates:
+ * 1. directStreamUrl: Direct raw download link for official social API pull workers (TikTok v2, Meta Graph, YouTube)
+ * 2. previewThumbnailUrl: High-res image thumbnail for mockups and device live preview
+ * 3. embedVideoUrl: Google Drive video preview player for native iframe preview
  */
 
 export interface GoogleDriveFileInfo {
@@ -10,6 +18,7 @@ export interface GoogleDriveFileInfo {
   fileId: string | null;
   directStreamUrl: string;
   previewThumbnailUrl: string;
+  embedVideoUrl: string;
   originalUrl: string;
   formatNote: string;
 }
@@ -19,10 +28,11 @@ export function parseGoogleDriveUrl(url: string): GoogleDriveFileInfo {
     return {
       isGoogleDrive: false,
       fileId: null,
-      directStreamUrl: url || "",
-      previewThumbnailUrl: url || "",
-      originalUrl: url || "",
-      formatNote: "Standard media URL",
+      directStreamUrl: "",
+      previewThumbnailUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
+      embedVideoUrl: "",
+      originalUrl: "",
+      formatNote: "Empty URL",
     };
   }
 
@@ -31,33 +41,37 @@ export function parseGoogleDriveUrl(url: string): GoogleDriveFileInfo {
   // Pattern 1: drive.google.com/file/d/FILE_ID/...
   // Pattern 2: drive.google.com/open?id=FILE_ID
   // Pattern 3: drive.google.com/uc?id=FILE_ID
-  const fileIdMatch =
-    cleanUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
-    cleanUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  // Pattern 4: Raw file ID if length >= 20 and alphanumeric
+  const matchFileD = cleanUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  const matchIdParam = cleanUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  const isRawId = !cleanUrl.includes("/") && cleanUrl.length >= 20;
 
-  if (fileIdMatch && fileIdMatch[1]) {
-    const fileId = fileIdMatch[1];
-    // Direct stream link bypassing web viewer
+  const fileId = matchFileD?.[1] || matchIdParam?.[1] || (isRawId ? cleanUrl : null);
+
+  if (fileId) {
     const directStreamUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
-    // Fast thumbnail preview for UI mockup
     const previewThumbnailUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`;
+    const embedVideoUrl = `https://drive.google.com/file/d/${fileId}/preview`;
 
     return {
       isGoogleDrive: true,
       fileId,
       directStreamUrl,
       previewThumbnailUrl,
+      embedVideoUrl,
       originalUrl: cleanUrl,
-      formatNote: "Converted Google Drive video stream (TikTok / YouTube / Reel API Ready)",
+      formatNote: "Google Drive Video Validated (Direct Stream & Preview Ready)",
     };
   }
 
+  // Not a Google Drive URL, return original media URL
   return {
     isGoogleDrive: false,
     fileId: null,
     directStreamUrl: cleanUrl,
     previewThumbnailUrl: cleanUrl,
+    embedVideoUrl: cleanUrl,
     originalUrl: cleanUrl,
-    formatNote: "Standard media URL",
+    formatNote: "Direct media URL",
   };
 }

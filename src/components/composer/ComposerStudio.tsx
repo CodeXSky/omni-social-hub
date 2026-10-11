@@ -28,7 +28,10 @@ import {
   HardDrive,
   Film,
   Zap,
-  Check
+  Check,
+  Search,
+  Globe,
+  Loader2
 } from "lucide-react";
 
 export function ComposerStudio() {
@@ -47,10 +50,16 @@ export function ComposerStudio() {
     setScheduledAt,
     tone,
     setTone,
+    affiliateProductUrl,
+    setAffiliateProductUrl,
     affiliateLink,
     setAffiliateLink,
     affiliateProductName,
     setAffiliateProductName,
+    fetchedProduct,
+    setFetchedProduct,
+    isFetchingProduct,
+    setIsFetchingProduct,
     currentTrendingTopic,
     setCurrentTrendingTopic,
     trendingUrgency,
@@ -71,7 +80,37 @@ export function ComposerStudio() {
   const [newMediaInput, setNewMediaInput] = useState("");
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
-  // Trigger AI Multi-Channel Adaptation with Trending & Google Drive Video
+  // Fetch Product Metadata from Affiliate Product Link
+  const handleFetchProductMetadata = async () => {
+    if (!affiliateProductUrl) return;
+    try {
+      setIsFetchingProduct(true);
+      const res = await fetch("/api/product/fetch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: affiliateProductUrl }),
+      });
+      const data = await res.json();
+      if (data.success && data.product) {
+        setFetchedProduct(data.product);
+        setAffiliateProductName(data.product.title);
+        // Automatically inject rich product context into master caption if brief
+        if (masterCaption.length < 150) {
+          setMasterCaption(
+            `${data.product.title}: ${data.product.description}`
+          );
+        }
+        setSuccessBanner(`🎯 Fetched Product: "${data.product.title.slice(0, 45)}..."! AI will craft custom affiliate copy.`);
+        setTimeout(() => setSuccessBanner(null), 4500);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsFetchingProduct(false);
+    }
+  };
+
+  // Trigger AI Multi-Channel Adaptation with Trending, Product Info & Google Drive Video
   const handleAdaptWithAI = async () => {
     try {
       setIsAdapting(true);
@@ -84,7 +123,7 @@ export function ComposerStudio() {
           tone,
           niche: currentTrendingTopic,
           affiliateLink,
-          affiliateProductName,
+          affiliateProductName: fetchedProduct?.title || affiliateProductName,
           googleDriveUrl: googleDriveVideoUrl,
         }),
       });
@@ -96,7 +135,7 @@ export function ComposerStudio() {
           setTrendingUrgency(data.trendingContext.urgency);
         }
         setSuccessBanner(
-          `🔥 AI updated copy with trending wave: "${data.trendingContext?.topic || currentTrendingTopic}" & Google Drive stream ready!`
+          `🔥 AI generated native captions with trend "${data.trendingContext?.topic || currentTrendingTopic}" & Google Drive stream connected!`
         );
         setTimeout(() => setSuccessBanner(null), 5000);
       }
@@ -169,7 +208,7 @@ export function ComposerStudio() {
           </div>
           <span className="text-xs text-zinc-500">|</span>
           <span className="text-xs text-zinc-400">
-            Split-Screen 3-Column Omni Engine • Google Drive Video & Viral Trends
+            Split-Screen 3-Column Omni Engine • Product Scraper & Google Drive Video
           </span>
         </div>
 
@@ -226,12 +265,86 @@ export function ComposerStudio() {
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-cyan-400" />
-              1. Master Idea, Google Drive & Trends
+              1. Master Idea, Product & GDrive Video
             </span>
             <span className="text-[10px] text-zinc-500 font-mono">STEP 1</span>
           </div>
 
-          {/* Real-Time Trending Topic Selector */}
+          {/* 1. PRODUCT METADATA FETCHER (NEW) */}
+          <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-500/10 via-zinc-900 to-zinc-900 border border-emerald-500/30 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-emerald-400" />
+                Affiliate Target Product Link
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold">
+                Auto-Metadata Scraper
+              </span>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={affiliateProductUrl}
+                onChange={(e) => setAffiliateProductUrl(e.target.value)}
+                placeholder="Paste Amazon, Shopify, or SaaS product link..."
+                className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-emerald-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+              />
+              <button
+                onClick={handleFetchProductMetadata}
+                disabled={isFetchingProduct || !affiliateProductUrl}
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 transition-colors"
+              >
+                {isFetchingProduct ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Search className="w-3.5 h-3.5" />
+                )}
+                <span>Fetch Info</span>
+              </button>
+            </div>
+
+            {fetchedProduct && (
+              <div className="p-2.5 rounded-lg bg-zinc-950/80 border border-zinc-800 text-[11px] text-zinc-300 space-y-1">
+                <div className="font-bold text-white line-clamp-1">{fetchedProduct.title}</div>
+                <div className="text-[10px] text-zinc-400 line-clamp-2">{fetchedProduct.description}</div>
+                <div className="text-[9px] text-emerald-400 font-mono pt-0.5">
+                  Brand: {fetchedProduct.brand} • Ready for AI copy optimization
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 2. GOOGLE DRIVE VIDEO LINK INGESTION */}
+          <div className="p-3.5 rounded-xl bg-gradient-to-br from-blue-500/10 via-zinc-900 to-zinc-900 border border-blue-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-blue-400 flex items-center gap-1.5">
+                <HardDrive className="w-3.5 h-3.5 text-blue-400" />
+                Google Drive Video Link (Direct Stream)
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono font-bold">
+                TikTok • Shorts • Reel Ready
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <input
+                type="text"
+                value={googleDriveVideoUrl}
+                onChange={(e) => setGoogleDriveVideoUrl(e.target.value)}
+                placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-blue-200 focus:outline-none focus:border-blue-400"
+              />
+              <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                <span className="flex items-center gap-1 text-emerald-400">
+                  <Check className="w-3 h-3" /> Auto-converted to direct pull URL
+                </span>
+                <span>Supports 9:16 vertical & 16:9</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. REAL-TIME TRENDING TOPIC SELECTOR */}
           <div className="p-3 rounded-xl bg-gradient-to-r from-orange-500/10 via-zinc-900 to-zinc-900 border border-orange-500/30 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-orange-400 flex items-center gap-1.5">
@@ -260,67 +373,26 @@ export function ComposerStudio() {
             </select>
           </div>
 
-          {/* Google Drive Video Link Ingestion Box */}
-          <div className="p-3.5 rounded-xl bg-gradient-to-br from-blue-500/10 via-zinc-900 to-zinc-900 border border-blue-500/30 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-blue-400 flex items-center gap-1.5">
-                <HardDrive className="w-3.5 h-3.5 text-blue-400" />
-                Google Drive Video URL (Direct Stream)
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono font-bold">
-                TikTok • Shorts • Reel Ready
-              </span>
-            </div>
-
-            <div className="space-y-1.5">
-              <input
-                type="text"
-                value={googleDriveVideoUrl}
-                onChange={(e) => setGoogleDriveVideoUrl(e.target.value)}
-                placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-blue-200 focus:outline-none focus:border-blue-400"
-              />
-              <div className="flex items-center justify-between text-[10px] text-zinc-400">
-                <span className="flex items-center gap-1 text-emerald-400">
-                  <Check className="w-3 h-3" /> Auto-converted to direct pull URL
-                </span>
-                <span>Supports 9:16 vertical & 16:9</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Affiliate Conversion Box */}
+          {/* 4. AFFILIATE REFERRAL LINK */}
           <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/10 via-zinc-900 to-zinc-900 border border-amber-500/30 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                 <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
-                Affiliate Revenue Engine
+                Your Affiliate / Partner Referral Link
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
                 Auto-Injected
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <label className="text-[10px] text-zinc-400 block mb-1">Affiliate Link</label>
-                <input
-                  type="text"
-                  value={affiliateLink}
-                  onChange={(e) => setAffiliateLink(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-1.5 text-xs text-amber-200 focus:outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] text-zinc-400 block mb-1">Product Name</label>
-                <input
-                  type="text"
-                  value={affiliateProductName}
-                  onChange={(e) => setAffiliateProductName(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-1.5 text-xs text-zinc-200 focus:outline-none focus:border-amber-400"
-                />
-              </div>
+            <div className="space-y-1.5 text-xs">
+              <input
+                type="text"
+                value={affiliateLink}
+                onChange={(e) => setAffiliateLink(e.target.value)}
+                placeholder="https://yourlink.com/ref/partner"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-1.5 text-xs text-amber-200 focus:outline-none focus:border-amber-400"
+              />
             </div>
           </div>
 
@@ -331,7 +403,7 @@ export function ComposerStudio() {
               type="text"
               value={masterTitle}
               onChange={(e) => setMasterTitle(e.target.value)}
-              placeholder="e.g. Q4 Feature Launch"
+              placeholder="e.g. Q4 Feature Launch & Product Review"
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/60"
             />
           </div>
@@ -346,7 +418,7 @@ export function ComposerStudio() {
               rows={4}
               value={masterCaption}
               onChange={(e) => setMasterCaption(e.target.value)}
-              placeholder="Enter your core ideas. The AI will weave in current trending hooks and hashtags..."
+              placeholder="Enter your core ideas. The AI will weave in current trending hooks, product specs, and hashtags..."
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/60 leading-relaxed resize-none"
             />
           </div>
@@ -388,7 +460,7 @@ export function ComposerStudio() {
               <span className="w-2 h-2 rounded-full bg-violet-400" />
               2. Tailored Platform Variants
             </span>
-            <span className="text-[10px] text-zinc-500 font-mono">TRENDING & GDRIVE ADAPTED</span>
+            <span className="text-[10px] text-zinc-500 font-mono">PRODUCT & TRENDING ADAPTED</span>
           </div>
 
           {/* Platform Tab Navigation */}
@@ -437,7 +509,7 @@ export function ComposerStudio() {
           {/* Customized Platform Caption */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold text-zinc-400">
-              Adapted Caption (Trending Hooks & SEO)
+              Adapted Caption (Trending Hooks & Product Details)
             </label>
             <textarea
               rows={8}
