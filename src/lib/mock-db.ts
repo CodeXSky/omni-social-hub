@@ -63,6 +63,21 @@ class MockDatabase {
 
   private accounts: DBSocialAccount[] = [
     {
+      id: "acc-youtube-01",
+      workspaceId: "ws-acme-prod-01",
+      platform: Platform.YOUTUBE,
+      accountId: "yt_acme_official",
+      accountName: "Acme Creator Studio",
+      username: "AcmeCreatorOfficial",
+      profilePic: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80",
+      accessToken: encryptToken("mock_youtube_token_demo_mode"),
+      refreshToken: encryptToken("mock_youtube_refresh_demo_mode"),
+      tokenExpiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+      rateLimitRemaining: 9850,
+      profileMeta: { subscribers: 215000, verified: true, monetizationStatus: "ACTIVE", affiliateRevenue: "$4,820/mo" },
+      status: "ACTIVE",
+    },
+    {
       id: "acc-tiktok-01",
       workspaceId: "ws-acme-prod-01",
       platform: Platform.TIKTOK,

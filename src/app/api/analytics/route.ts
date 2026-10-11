@@ -26,12 +26,13 @@ export async function GET() {
     ];
 
     const platformDistribution = [
-      { platform: "TIKTOK", share: 44, color: "#00f2fe" },
-      { platform: "INSTAGRAM", share: 26, color: "#e1306c" },
-      { platform: "FACEBOOK", share: 14, color: "#1877f2" },
-      { platform: "TWITTER", share: 10, color: "#1d9bf0" },
-      { platform: "THREADS", share: 4, color: "#ffffff" },
-      { platform: "PINTEREST", share: 2, color: "#e60023" },
+      { platform: "YOUTUBE", share: 38, color: "#ff0000" },
+      { platform: "TIKTOK", share: 28, color: "#00f2fe" },
+      { platform: "INSTAGRAM", share: 16, color: "#e1306c" },
+      { platform: "FACEBOOK", share: 8, color: "#1877f2" },
+      { platform: "TWITTER", share: 6, color: "#1d9bf0" },
+      { platform: "THREADS", share: 3, color: "#ffffff" },
+      { platform: "PINTEREST", share: 1, color: "#e60023" },
     ];
 
     return NextResponse.json({

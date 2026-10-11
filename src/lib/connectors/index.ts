@@ -5,6 +5,7 @@ import { ThreadsConnector } from "./threads.connector";
 import { TikTokConnector } from "./tiktok.connector";
 import { TwitterConnector } from "./twitter.connector";
 import { PinterestConnector } from "./pinterest.connector";
+import { YouTubeConnector } from "./youtube.connector";
 
 export class ConnectorRegistry {
   private static connectors: Map<Platform, ISocialPlatformConnector> = new Map();
@@ -30,6 +31,9 @@ export class ConnectorRegistry {
         case Platform.PINTEREST:
           this.connectors.set(platform, new PinterestConnector());
           break;
+        case Platform.YOUTUBE:
+          this.connectors.set(platform, new YouTubeConnector());
+          break;
         default:
           throw new Error(`Unsupported platform: ${platform}`);
       }
@@ -44,3 +48,4 @@ export * from "./threads.connector";
 export * from "./tiktok.connector";
 export * from "./twitter.connector";
 export * from "./pinterest.connector";
+export * from "./youtube.connector";

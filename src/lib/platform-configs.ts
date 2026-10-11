@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   Flame,
   Layers,
-  Send
+  Send,
+  PlaySquare
 } from "lucide-react";
 
 export interface PlatformConfig {
@@ -25,6 +26,15 @@ export interface PlatformConfig {
 }
 
 export const PLATFORM_CONFIGS: Record<Platform, PlatformConfig> = {
+  YOUTUBE: {
+    name: "YouTube / Shorts",
+    badgeBg: "bg-red-500/10 border-red-500/30 text-red-400",
+    badgeText: "text-red-400",
+    borderColor: "border-red-500/40",
+    icon: PlaySquare,
+    maxChars: 5000,
+    aspectRatioHint: "9:16 Shorts or 16:9 Video + Affiliate Links in Description",
+  },
   TIKTOK: {
     name: "TikTok",
     badgeBg: "bg-cyan-500/10 border-cyan-500/30 text-cyan-400",

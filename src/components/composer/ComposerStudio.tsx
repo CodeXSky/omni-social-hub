@@ -20,6 +20,9 @@ import {
   Wand2,
   ExternalLink,
   ChevronRight,
+  ShoppingBag,
+  Tag,
+  Link as LinkIcon
 } from "lucide-react";
 
 export function ComposerStudio() {
@@ -35,6 +38,10 @@ export function ComposerStudio() {
     setScheduledAt,
     tone,
     setTone,
+    affiliateLink,
+    setAffiliateLink,
+    affiliateProductName,
+    setAffiliateProductName,
     selectedPlatforms,
     togglePlatform,
     activeVariantTab,
@@ -51,7 +58,7 @@ export function ComposerStudio() {
   const [newMediaInput, setNewMediaInput] = useState("");
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
-  // Trigger AI Multi-Channel Adaptation
+  // Trigger AI Multi-Channel Adaptation with Affiliate Injection
   const handleAdaptWithAI = async () => {
     try {
       setIsAdapting(true);
@@ -62,12 +69,14 @@ export function ComposerStudio() {
           masterCaption,
           targetPlatforms: selectedPlatforms,
           tone,
+          affiliateLink,
+          affiliateProductName,
         }),
       });
       const data = await res.json();
       if (data.success) {
         setBulkVariants(data.variants);
-        setSuccessBanner("✨ AI tailored native captions across all active platforms!");
+        setSuccessBanner("✨ AI tailored native captions and affiliate disclosures across all active platforms!");
         setTimeout(() => setSuccessBanner(null), 4000);
       }
     } catch (err) {
@@ -105,7 +114,7 @@ export function ComposerStudio() {
       if (data.success) {
         setSuccessBanner(
           isInstant
-            ? "🚀 Dispatched to BullMQ workers! Posts are publishing across connected channels."
+            ? "🚀 Dispatched to BullMQ workers! Posts and affiliate links published across connected channels."
             : "📅 Successfully queued for automated multi-channel schedule!"
         );
         setTimeout(() => setSuccessBanner(null), 5000);
@@ -124,7 +133,7 @@ export function ComposerStudio() {
     options: {},
   };
 
-  const activeConfig = PLATFORM_CONFIGS[activeVariantTab];
+  const activeConfig = PLATFORM_CONFIGS[activeVariantTab] || PLATFORM_CONFIGS.YOUTUBE;
 
   return (
     <div className="flex-1 flex flex-col h-[calc(100vh-4rem)] overflow-hidden bg-zinc-950">
@@ -139,7 +148,7 @@ export function ComposerStudio() {
           </div>
           <span className="text-xs text-zinc-500">|</span>
           <span className="text-xs text-zinc-400">
-            Split-Screen 3-Column Omni Engine
+            Split-Screen 3-Column Omni Engine • YouTube & Affiliate Ready
           </span>
         </div>
 
@@ -208,9 +217,49 @@ export function ComposerStudio() {
               type="text"
               value={masterTitle}
               onChange={(e) => setMasterTitle(e.target.value)}
-              placeholder="e.g. Q4 Feature Launch"
+              placeholder="e.g. Q4 Feature Launch & Product Review"
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/60"
             />
+          </div>
+
+          {/* Affiliate Conversion Box */}
+          <div className="p-3.5 rounded-xl bg-gradient-to-br from-amber-500/10 via-zinc-900 to-zinc-900 border border-amber-500/30 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
+                Affiliate Revenue Engine
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
+                Auto-Injected
+              </span>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div>
+                <label className="text-[10px] text-zinc-400 block mb-1">Affiliate Link / Referral URL</label>
+                <div className="relative">
+                  <LinkIcon className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={affiliateLink}
+                    onChange={(e) => setAffiliateLink(e.target.value)}
+                    placeholder="https://yourlink.com/ref/partner"
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-amber-200 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] text-zinc-400 block mb-1">Product / Brand Promo Name</label>
+                <input
+                  type="text"
+                  value={affiliateProductName}
+                  onChange={(e) => setAffiliateProductName(e.target.value)}
+                  placeholder="e.g. OmniSocial Hub Pro"
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Master Caption */}
@@ -220,10 +269,10 @@ export function ComposerStudio() {
               <span className="text-[10px] text-zinc-500">{masterCaption.length} chars</span>
             </div>
             <textarea
-              rows={6}
+              rows={5}
               value={masterCaption}
               onChange={(e) => setMasterCaption(e.target.value)}
-              placeholder="Type your base message or campaign thought here. The AI engine will reshape this into platform-specific lengths, hooks, and hashtags..."
+              placeholder="Type your base message or campaign thought here. The AI engine will reshape this into platform-specific lengths, hooks, timestamps, and affiliate links..."
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/60 leading-relaxed resize-none"
             />
           </div>
@@ -236,7 +285,7 @@ export function ComposerStudio() {
                 { id: "viral_edgy", label: "🔥 Viral & Edgy" },
                 { id: "engaging", label: "💬 Engaging" },
                 { id: "professional", label: "💼 SaaS Pro" },
-                { id: "educational", label: "📚 Guide" },
+                { id: "educational", label: "📚 Guide & Demo" },
                 { id: "casual", label: "☕ Casual" },
               ].map((t) => (
                 <button
@@ -306,7 +355,7 @@ export function ComposerStudio() {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Paste image or 9:16 video URL..."
+                  placeholder="Paste YouTube Shorts / 9:16 video URL..."
                   value={newMediaInput}
                   onChange={(e) => setNewMediaInput(e.target.value)}
                   className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/60"
@@ -356,7 +405,7 @@ export function ComposerStudio() {
           {/* Platform Tab Navigation */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
             {selectedPlatforms.map((p) => {
-              const cfg = PLATFORM_CONFIGS[p];
+              const cfg = PLATFORM_CONFIGS[p] || PLATFORM_CONFIGS.YOUTUBE;
               const Icon = cfg.icon;
               const isActive = activeVariantTab === p;
               return (
@@ -383,7 +432,7 @@ export function ComposerStudio() {
                 {activeConfig.name} Variant
               </span>
               <span className="text-[10px] text-zinc-400 font-mono">
-                {currentVariant.caption.length} / {activeConfig.maxChars || 2200}
+                {currentVariant.caption.length} / {activeConfig.maxChars || 5000}
               </span>
             </div>
             <div className="text-[11px] text-cyan-400/90 font-medium">
@@ -421,7 +470,42 @@ export function ComposerStudio() {
             </div>
           </div>
 
-          {/* Platform Specific Extra Parameters */}
+          {/* YouTube Specific Settings */}
+          {activeVariantTab === Platform.YOUTUBE && (
+            <div className="space-y-2 pt-2 border-t border-zinc-800">
+              <label className="text-[11px] font-semibold text-red-400">YouTube & Shorts Specifics</label>
+              <input
+                type="text"
+                placeholder="Video Title (SEO optimized)"
+                value={currentVariant.options?.title || ""}
+                onChange={(e) =>
+                  updateVariant(Platform.YOUTUBE, {
+                    options: { ...currentVariant.options, title: e.target.value },
+                  })
+                }
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200"
+              />
+              <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800 text-[11px] text-zinc-400 space-y-1.5">
+                <div className="flex justify-between text-zinc-300 font-medium">
+                  <span>Pinned Affiliate Comment:</span>
+                  <span className="text-amber-400">Active</span>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Pinned Comment Text"
+                  value={currentVariant.options?.pinnedComment || ""}
+                  onChange={(e) =>
+                    updateVariant(Platform.YOUTUBE, {
+                      options: { ...currentVariant.options, pinnedComment: e.target.value },
+                    })
+                  }
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-[11px] text-amber-200"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Pinterest Extra */}
           {activeVariantTab === Platform.PINTEREST && (
             <div className="space-y-2 pt-2 border-t border-zinc-800">
               <label className="text-[11px] font-semibold text-rose-400">Pinterest Pin Specifics</label>
@@ -436,28 +520,6 @@ export function ComposerStudio() {
                 }
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200"
               />
-              <input
-                type="text"
-                placeholder="Destination Link URL"
-                value={currentVariant.options?.linkUrl || ""}
-                onChange={(e) =>
-                  updateVariant(Platform.PINTEREST, {
-                    options: { ...currentVariant.options, linkUrl: e.target.value },
-                  })
-                }
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200"
-              />
-            </div>
-          )}
-
-          {activeVariantTab === Platform.TIKTOK && (
-            <div className="space-y-2 pt-2 border-t border-zinc-800">
-              <label className="text-[11px] font-semibold text-cyan-400">TikTok Direct Post Settings</label>
-              <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800 text-[11px] text-zinc-400 space-y-1">
-                <div>Sound: <span className="text-zinc-200">Recommended Viral Audio</span></div>
-                <div>Privacy: <span className="text-zinc-200">PUBLIC_TO_EVERYONE</span></div>
-                <div>Format: <span className="text-emerald-400">9:16 Vertical Video Pull-URL Enabled</span></div>
-              </div>
             </div>
           )}
         </div>

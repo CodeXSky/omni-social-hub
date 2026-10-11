@@ -151,6 +151,7 @@ export function OmniDashboard() {
           {/* Graphical Growth Bars Simulation */}
           <div className="space-y-4 pt-2">
             {[
+              { label: "YouTube Studio (215K Subscribers • $4.8K/mo Affiliate)", percent: 94, color: "from-red-500 to-rose-600", gain: "+5,200 subs this week" },
               { label: "TikTok (124.5K Followers)", percent: 85, color: "from-cyan-500 to-blue-500", gain: "+2,400 this week" },
               { label: "Instagram (48.2K Followers)", percent: 62, color: "from-pink-500 to-rose-500", gain: "+980 this week" },
               { label: "X / Twitter (31.2K Followers)", percent: 45, color: "from-sky-400 to-indigo-500", gain: "+450 this week" },
