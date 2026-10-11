@@ -100,6 +100,40 @@ function generatePlatformVariant(
   const isProduct = affiliateProductName && affiliateProductName !== "OmniSocial Hub Pro";
   const productName = affiliateProductName;
 
+  // Helper to extract product details or highlights from masterCaption & productName
+  const getProductHighlights = (name: string, captionText: string) => {
+    const lower = `${name} ${captionText}`.toLowerCase();
+    if (lower.includes("đèn") || lower.includes("lymax") || lower.includes("bảo vệ mắt") || lower.includes("ánh sáng")) {
+      return [
+        "Ánh sáng bất đối xứng chiếu thẳng bàn phím, không rọi thẳng mắt chống mỏi mắt hiệu quả.",
+        "3 chế độ ánh sáng thông minh (vàng ấm, tự nhiên, trắng sáng) dễ dàng đổi màu.",
+        "Tiết kiệm diện tích bàn làm việc, lắp chắc chắn trực tiếp trên viền màn hình máy tính."
+      ];
+    }
+    if (lower.includes("chuột") || lower.includes("công thái học") || lower.includes("logitech") || lower.includes("vertical")) {
+      return [
+        "Góc cầm 57 độ tự nhiên ôm sát lòng bàn tay, giải phóng áp lực cổ tay.",
+        "Phím bấm Silent êm ái, click chống ồn làm việc đêm không sợ phiền ai.",
+        "Kết nối Bluetooth mượt mà giữa Laptop và PC."
+      ];
+    }
+    if (lower.includes("bàn phím") || lower.includes("keyboard")) {
+      return [
+        "Cảm giác gõ đầm tay, nảy đều giúp tăng tốc độ gõ phím.",
+        "Kết nối không dây ổn định, thời lượng pin sử dụng bền bỉ.",
+        "Thiết kế nhỏ gọn, tinh tế tối ưu cho góc làm việc."
+      ];
+    }
+    // Default highlights for any general tech/product
+    return [
+      `Thiết kế hiện đại, hoàn thiện tỉ mỉ và độ bền ấn tượng của ${name.slice(0, 30)}.`,
+      "Trải nghiệm thực tế mượt mà, tiện lợi hỗ trợ tối đa công việc hàng ngày.",
+      "Mức giá cực kỳ hợp lý trong phân khúc, nhiều ưu đãi khi săn sale."
+    ];
+  };
+
+  const highlights = getProductHighlights(productName, cleanCaption);
+
   switch (platform) {
     case Platform.YOUTUBE: {
       const hookTitle = isProduct
@@ -109,9 +143,9 @@ function generatePlatformVariant(
       const videoBody = isProduct
         ? `${trending.suggestedHook}\n\n` +
           `👉 Trải nghiệm thực tế em **${productName}** sau một thời gian sử dụng:\n` +
-          `- Cảm giác cầm nắm công thái học ôm sát lòng bàn tay, giảm áp lực cổ tay rõ rệt.\n` +
-          `- Phím bấm êm ái, click chống ồn làm việc đêm không sợ phiền ai.\n` +
-          `- Kết nối Bluetooth mượt mà giữa Laptop và PC.\n\n` +
+          `- ${highlights[0]}\n` +
+          `- ${highlights[1]}\n` +
+          `- ${highlights[2]}\n\n` +
           `📌 Link sản phẩm chính hãng & săn voucher độc quyền mình để ở dưới nhé!`
         : `${trending.suggestedHook}\n\n${cleanCaption}`;
 
@@ -152,7 +186,7 @@ function generatePlatformVariant(
         : trending.suggestedHook;
 
       const punchy = isProduct
-        ? `${viralHook}\n\nAi ngồi máy tính nhiều mà mỏi cổ tay thì cứu tinh đây rồi. Chuột ôm tay 57 độ cực chuẩn, bấm êm ru không tiếng click.\n\n🔗 Link săn sale chính hãng mình ghim ở Bio hoặc Giỏ hàng nha cả nhà! 👇`
+        ? `${viralHook}\n\nTrải nghiệm thực tế em này cực kỳ ưng: ${highlights[0]} ${highlights[1]}\n\n🔗 Link săn sale chính hãng mình ghim ở Bio hoặc Giỏ hàng nha cả nhà! 👇`
         : `${viralHook}\n\n${cleanCaption.slice(0, 240)}\n\n🔗 Link in bio to claim early access & deal! 👇`;
 
       const hashtags = ["#TikTokMadeMeDoIt", "#TechTok", ...trendingTags, "#FYP"];
@@ -174,11 +208,11 @@ function generatePlatformVariant(
     case Platform.INSTAGRAM: {
       const igCaption = isProduct
         ? `${trending.suggestedHook} ✨\n\nNâng cấp góc làm việc với em **${productName}** siêu xịn mịn!\n.\n.` +
-          `✅ Cải thiện tư thế cầm tay tự nhiên\n` +
-          `✅ Switch êm ái, yên tĩnh tuyệt đối\n` +
-          `✅ Màu sắc thẩm mỹ, setup lên bàn cực sang\n.\n.` +
+          `✅ ${highlights[0]}\n` +
+          `✅ ${highlights[1]}\n` +
+          `✅ ${highlights[2]}\n.\n.` +
           `👉 Link mua chính hãng + mã giảm giá mình để ở Link in Bio nhé! 🛒\n` +
-          `❤️ Thả tim nếu bạn cũng mê góc setup công thái học!\n` +
+          `❤️ Thả tim nếu bạn cũng mê góc setup công nghệ!\n` +
           `📌 Lưu lại bài viết khi cần săn sale nhé!\n\n` +
           `#InstagramReels #DeskSetup ${trendingTags.join(" ")}`
         : `${trending.suggestedHook}\n\n${cleanCaption}\n.\n.\n👉 Click link in bio to get an exclusive deal! ✨\nDouble tap if this resonated! ❤️\nSave this Reel for later 📌\nShare with a friend! 🚀\n\n#InstagramReels #CreatorEconomy ${trendingTags.join(" ")} #DailyHustle`;
@@ -201,11 +235,11 @@ function generatePlatformVariant(
     case Platform.FACEBOOK: {
       const structuredPost = isProduct
         ? `📢 GÓC REVIEW ĐỒ CÔNG NGHỆ & SETUP BÀN LÀM VIỆC\n\n` +
-          `Đã tìm ra giải pháp cho anh chị em dân văn phòng ngồi 8-10 tiếng bị mỏi cổ tay: **${productName}**!\n\n` +
-          `💡 Trải nghiệm nhanh:\n` +
-          `1. Cầm góc 57 độ tự nhiên, không bị vặn cơ tay như chuột thường.\n` +
-          `2. Bấm siêu êm, độ nhạy cao, pin dùng cực lâu.\n` +
-          `3. Kết nối Bluetooth nhanh chóng cho cả Windows và Mac.\n\n` +
+          `Đã tìm ra giải pháp tối ưu cho anh chị em dân văn phòng & setup bàn làm việc: **${productName}**!\n\n` +
+          `💡 Trải nghiệm thực tế:\n` +
+          `1. ${highlights[0]}\n` +
+          `2. ${highlights[1]}\n` +
+          `3. ${highlights[2]}\n\n` +
           `👉 Anh chị em quan tâm có thể săn sale chính hãng tại link này nhé: ${affiliateLink}\n\n` +
           `Lưu bài viết hoặc tag đồng nghiệp cùng cơ quan vào tham khảo nhé cả nhà!`
         : `📢 TRENDING IN ${trending.category.toUpperCase()}\n\n${cleanCaption}\n\n💡 Key takeaways from this shift:\n1. Keeps you ahead of emerging shifts\n2. Streamlines multi-channel execution\n\n👉 Test it out and grab your deal here: ${affiliateLink}\n\nSave this post and tag a friend who needs this!`;
@@ -227,7 +261,7 @@ function generatePlatformVariant(
 
     case Platform.TWITTER: {
       const shortTweet = isProduct
-        ? `Dân văn phòng mỏi cổ tay nhất định phải đổi qua chuột công thái học: ${productName.slice(0, 40)}... Cầm siêu êm, giảm áp lực tay rõ rệt! 👉 ${affiliateLink} ${trendingTags.slice(0, 2).join(" ")}`
+        ? `Gợi ý nâng cấp bàn làm việc cho anh em: ${productName.slice(0, 40)}... ${highlights[0].slice(0, 50)} 👉 ${affiliateLink} ${trendingTags.slice(0, 2).join(" ")}`
         : `${cleanCaption.slice(0, 180)} 👉 ${affiliateLink} ${trendingTags.slice(0, 2).join(" ")}`;
 
       const hashtags = ["#TechReview", ...trendingTags];
@@ -247,7 +281,7 @@ function generatePlatformVariant(
 
     case Platform.THREADS: {
       const dialogueText = isProduct
-        ? `${trending.suggestedHook}\n\nSau 1 tháng dùng thử ${productName}, mình nhận ra trước giờ cổ tay mình phải chịu khổ quá nhiều. Cầm em này xong không muốn quay lại chuột thường luôn 🥲\n\nCó bạn nào trong này cũng đang dùng chuột dọc không? Chia sẻ cảm nhận với mình bên dưới nhé 👇\n\n(Link mua chính hãng cho ai cần: ${affiliateLink})`
+        ? `${trending.suggestedHook}\n\nSau 1 thời gian dùng thử ${productName}, mình nhận ra em này giải quyết đúng vấn đề mình cần: ${highlights[0]}\n\nCó bạn nào trong này cũng đang dùng qua chưa? Chia sẻ cảm nhận với mình bên dưới nhé 👇\n\n(Link mua chính hãng cho ai cần: ${affiliateLink})`
         : `${trending.suggestedHook}\n\n${cleanCaption.slice(0, 360)}\n\nTool link: ${affiliateLink}\n\nWhat’s your perspective on this? Let’s chat in the replies 👇`;
 
       const hashtags = ["#threadscommunity", ...trendingTags];
@@ -267,7 +301,7 @@ function generatePlatformVariant(
     case Platform.PINTEREST: {
       const title = isProduct ? `Gợi Ý Setup Góc Làm Việc: ${productName.slice(0, 50)}` : cleanCaption.split(".")[0]?.slice(0, 75) || trending.topic;
       const pinDesc = isProduct
-        ? `${trending.suggestedHook} Nâng cấp góc làm việc công thái học với ${productName}. Thiết kế tối giản, bảo vệ cổ tay. Click để săn voucher giảm giá độc quyền ngay hôm nay!`
+        ? `${trending.suggestedHook} Nâng cấp góc làm việc với ${productName}. ${highlights[0]} Click để săn voucher giảm giá độc quyền ngay hôm nay!`
         : `${trending.suggestedHook} | ${cleanCaption.slice(0, 300)} | Click to claim your 30% discount today!`;
 
       const hashtags = ["#Inspiration", "#DeskSetup", ...trendingTags];
@@ -276,7 +310,7 @@ function generatePlatformVariant(
         platform: Platform.PINTEREST,
         caption: pinDesc,
         hashtags,
-        tips: "Từ khóa SEO Pinterest nhắm vào tệp tìm kiếm Desk Setup & Công thái học, liên kết đích dẫn thẳng về Shopee.",
+        tips: "Từ khóa SEO Pinterest nhắm vào tệp tìm kiếm Desk Setup & Công nghệ, liên kết đích dẫn thẳng về Shopee.",
         videoStreamUrl: mediaUrl,
         metadata: {
           title,

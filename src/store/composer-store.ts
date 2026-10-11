@@ -170,7 +170,13 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
   },
   setScheduledAt: (scheduledAt) => set({ scheduledAt }),
   setTone: (tone) => set({ tone }),
-  setAffiliateProductUrl: (affiliateProductUrl) => set({ affiliateProductUrl }),
+  setAffiliateProductUrl: (affiliateProductUrl) => {
+    set({ 
+      affiliateProductUrl,
+      // Auto-inject the product URL as the default affiliate referral link unless already customized
+      affiliateLink: affiliateProductUrl 
+    });
+  },
   setAffiliateLink: (affiliateLink) => set({ affiliateLink }),
   setAffiliateProductName: (affiliateProductName) => set({ affiliateProductName }),
   setFetchedProduct: (fetchedProduct) => set({ fetchedProduct }),

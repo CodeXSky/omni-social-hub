@@ -25,7 +25,10 @@ import {
   Camera,
   Volume2,
   Search,
-  UserPlus
+  UserPlus,
+  Home,
+  User,
+  Users
 } from "lucide-react";
 import { parseGoogleDriveUrl } from "@/lib/gdrive-resolver";
 
@@ -429,8 +432,8 @@ function TikTokMockup({
   onTogglePlay?: () => void;
 }) {
   return (
-    <div className="relative h-full w-full bg-black flex flex-col justify-between overflow-hidden font-sans">
-      {/* Video or Thumbnail Background */}
+    <div className="relative h-full w-full bg-black flex flex-col justify-between overflow-hidden font-sans select-none">
+      {/* Video or Thumbnail Background (9:16 Full Screen TikTok) */}
       {isPlayingVideo && gdriveInfo?.embedVideoUrl ? (
         <iframe
           src={gdriveInfo.embedVideoUrl}
@@ -467,27 +470,31 @@ function TikTokMockup({
       )}
 
       {/* Subtle overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none z-10" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/85 pointer-events-none z-10" />
 
-      {/* Top Header - Authentic TikTok Header */}
-      <div className="relative z-20 flex items-center justify-between px-4 pt-3 text-white text-xs font-semibold">
-        <div className="flex items-center gap-1.5 text-white/80">
-          <span className="text-[11px] font-bold tracking-tight">LIVE</span>
+      {/* Top Header - Authentic TikTok Header (Đang Follow / Dành cho bạn) */}
+      <div className="relative z-20 flex items-center justify-between px-3.5 pt-3 text-white text-xs font-semibold">
+        <div className="flex items-center gap-1.5 text-white/90">
+          <span className="text-[10px] font-bold tracking-tight border border-white/60 px-1 py-0.2 rounded-sm text-white">
+            LIVE
+          </span>
         </div>
-        <div className="flex items-center gap-5">
-          <span className="text-white/60 text-xs font-medium cursor-pointer">Following</span>
-          <div className="relative">
-            <span className="text-white text-xs font-bold">For You</span>
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-white rounded-full" />
+        <div className="flex items-center gap-4">
+          <span className="text-white/60 text-xs font-medium cursor-pointer hover:text-white transition-colors">
+            Đang Follow
+          </span>
+          <div className="relative cursor-pointer">
+            <span className="text-white text-xs font-bold">Dành cho bạn</span>
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-[2px] bg-white rounded-full" />
           </div>
         </div>
-        <Search className="w-4 h-4 text-white/90" />
+        <Search className="w-4 h-4 text-white cursor-pointer" />
       </div>
 
       {/* Right Sidebar Interaction Icons - Authentic TikTok Right Rail */}
-      <div className="relative z-20 self-end mr-2.5 mb-14 flex flex-col items-center gap-3.5 text-white">
+      <div className="relative z-20 self-end mr-2.5 mb-1 flex flex-col items-center gap-3 text-white">
         {/* Creator Avatar with Red Plus */}
-        <div className="relative mb-1">
+        <div className="relative mb-0.5">
           <div className="w-10 h-10 rounded-full border-2 border-white overflow-hidden bg-zinc-800 shadow-md">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80" alt="Avatar" className="w-full h-full object-cover" />
@@ -499,64 +506,99 @@ function TikTokMockup({
 
         {/* Like */}
         <div className="flex flex-col items-center">
-          <div className="p-1">
+          <div className="p-0.5">
             <Heart className="w-7 h-7 text-white fill-white drop-shadow" />
           </div>
-          <span className="text-[10px] font-semibold tracking-tight text-white/95">182.4K</span>
+          <span className="text-[10px] font-bold tracking-tight text-white drop-shadow">190,4K</span>
         </div>
 
         {/* Comment */}
         <div className="flex flex-col items-center">
-          <div className="p-1">
+          <div className="p-0.5">
             <MessageCircle className="w-7 h-7 text-white drop-shadow fill-white/10" />
           </div>
-          <span className="text-[10px] font-semibold tracking-tight text-white/95">3,490</span>
+          <span className="text-[10px] font-bold tracking-tight text-white drop-shadow">568</span>
         </div>
 
         {/* Bookmark / Favorite */}
         <div className="flex flex-col items-center">
-          <div className="p-1">
+          <div className="p-0.5">
             <Bookmark className="w-7 h-7 text-white drop-shadow fill-white/10" />
           </div>
-          <span className="text-[10px] font-semibold tracking-tight text-white/95">24.1K</span>
+          <span className="text-[10px] font-bold tracking-tight text-white drop-shadow">24,1K</span>
         </div>
 
         {/* Share */}
         <div className="flex flex-col items-center">
-          <div className="p-1">
+          <div className="p-0.5">
             <Share2 className="w-7 h-7 text-white drop-shadow fill-white/10" />
           </div>
-          <span className="text-[10px] font-semibold tracking-tight text-white/95">12.5K</span>
+          <span className="text-[10px] font-bold tracking-tight text-white drop-shadow">3218</span>
         </div>
 
         {/* Spinning Vinyl Record Disc */}
-        <div className="mt-1 w-9 h-9 rounded-full bg-zinc-950 border-4 border-zinc-800 flex items-center justify-center shadow-lg animate-spin" style={{ animationDuration: "5s" }}>
+        <div className="w-9 h-9 rounded-full bg-zinc-950 border-4 border-zinc-800 flex items-center justify-center shadow-lg animate-spin" style={{ animationDuration: "5s" }}>
           <div className="w-4 h-4 rounded-full bg-cover overflow-hidden" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80')" }} />
         </div>
       </div>
 
-      {/* Bottom Caption & Audio Bar - Authentic TikTok Bottom Layout */}
-      <div className="relative z-20 px-3.5 pb-5 text-white space-y-1.5 max-w-[270px]">
-        <div className="flex items-center gap-1.5">
-          <span className="font-bold text-xs tracking-wide">@acme.creator</span>
-          <BadgeCheck className="w-3.5 h-3.5 text-[#20D5EC] fill-[#20D5EC]" />
-          {gdriveInfo?.isGoogleDrive && (
-            <span className="text-[8px] px-1.5 py-0.2 rounded bg-blue-500/40 text-blue-200 font-mono font-bold">
-              GDrive
-            </span>
-          )}
+      {/* Bottom Area: Caption & Native Navigation Bar */}
+      <div className="relative z-20 flex flex-col justify-end">
+        {/* Caption & Music Sound */}
+        <div className="px-3.5 pb-2 text-white space-y-1 max-w-[265px]">
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold text-xs tracking-wide">@khong_biet_la_ai</span>
+            <BadgeCheck className="w-3.5 h-3.5 text-[#20D5EC] fill-[#20D5EC]" />
+            {gdriveInfo?.isGoogleDrive && (
+              <span className="text-[8px] px-1.5 py-0.2 rounded bg-blue-500/40 text-blue-200 font-mono font-bold">
+                GDrive
+              </span>
+            )}
+          </div>
+
+          <p className="text-[11px] line-clamp-2 text-zinc-100 leading-snug drop-shadow-sm font-normal">
+            {caption || "Review chân thực đồ công nghệ! #xuhuong #fyp #tiktokmademebuyit"}
+          </p>
+
+          <div className="flex items-center gap-1.5 text-[10px] text-zinc-200 pt-0.5">
+            <Music2 className="w-3 h-3 shrink-0" />
+            <div className="overflow-hidden whitespace-nowrap">
+              <span className="inline-block text-[10px] font-medium opacity-90 truncate">
+                {options?.soundRecommendation || "♫ @D H V P Âm thanh Gốc - Trending Sound"}
+              </span>
+            </div>
+          </div>
         </div>
 
-        <p className="text-[11px] line-clamp-2 text-zinc-100 leading-snug drop-shadow-sm font-normal">
-          {caption || "Tap to discover viral tricks! #trending #foryou #viral"}
-        </p>
+        {/* Authentic TikTok Bottom Tab Bar */}
+        <div className="w-full bg-black/90 border-t border-zinc-900/90 py-1.5 px-3 flex items-center justify-between text-[9px] text-zinc-400 font-medium">
+          <div className="flex flex-col items-center gap-0.5 text-white">
+            <Home className="w-4 h-4 text-white" />
+            <span>Trang chủ</span>
+          </div>
 
-        <div className="flex items-center gap-2 text-[10px] text-zinc-200 pt-0.5">
-          <Music2 className="w-3 h-3 shrink-0" />
-          <div className="overflow-hidden whitespace-nowrap">
-            <span className="inline-block text-[10px] font-medium opacity-90 truncate">
-              {options?.soundRecommendation || "♫ Original Sound - Acme Creator Trending Audio"}
-            </span>
+          <div className="flex flex-col items-center gap-0.5">
+            <Users className="w-4 h-4 text-zinc-400" />
+            <span>Bạn bè</span>
+          </div>
+
+          {/* Plus Create Button */}
+          <div className="relative px-1">
+            <div className="w-9 h-6 rounded-lg bg-white flex items-center justify-center relative shadow">
+              <div className="absolute -left-1 w-2 h-6 bg-[#20D5EC] rounded-l-lg -z-10" />
+              <div className="absolute -right-1 w-2 h-6 bg-[#FE2C55] rounded-r-lg -z-10" />
+              <span className="text-zinc-950 font-black text-sm leading-none">+</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center gap-0.5">
+            <MessageCircle className="w-4 h-4 text-zinc-400" />
+            <span>Hộp thư</span>
+          </div>
+
+          <div className="flex flex-col items-center gap-0.5">
+            <User className="w-4 h-4 text-zinc-400" />
+            <span>Hồ sơ</span>
           </div>
         </div>
       </div>
