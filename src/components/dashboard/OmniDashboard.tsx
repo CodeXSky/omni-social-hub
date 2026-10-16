@@ -51,13 +51,15 @@ export function OmniDashboard() {
   }, []);
 
   const stats = data?.stats?.totals || {
-    views: 142800,
-    reach: 98500,
-    impressions: 185400,
-    likes: 12840,
-    comments: 2190,
-    shares: 1820,
+    views: 0,
+    reach: 0,
+    impressions: 0,
+    likes: 0,
+    comments: 0,
+    shares: 0,
   };
+
+  const platformDist = data?.platformDistribution || [];
 
   return (
     <div className="p-8 space-y-8 max-w-7xl mx-auto">
@@ -68,13 +70,13 @@ export function OmniDashboard() {
             <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
               Live Mission Control
             </span>
-            <span className="text-zinc-500 text-xs">• Real-Time Pulse</span>
+            <span className="text-zinc-500 text-xs">• Real-Time Ingested Data</span>
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight">
             Omni-Channel Social Command
           </h1>
           <p className="text-xs text-zinc-400 mt-1">
-            Aggregated cross-platform reach across TikTok, Instagram, X, Threads, Facebook & Pinterest.
+            Aggregated cross-platform reach across YouTube, TikTok, Instagram, Facebook, X, Threads & Pinterest.
           </p>
         </div>
 
@@ -94,28 +96,28 @@ export function OmniDashboard() {
         <MetricCard
           title="Total Views / Video Plays"
           value={stats.views.toLocaleString()}
-          change="+18.4% vs last week"
+          change={stats.views > 0 ? "Lượt xem video" : "0 views"}
           icon={Play}
           color="cyan"
         />
         <MetricCard
           title="Aggregated Reach"
           value={stats.reach.toLocaleString()}
-          change="+12.1% unique accounts"
+          change={stats.reach > 0 ? "Tài khoản tiếp cận" : "0 accounts reached"}
           icon={Users}
           color="purple"
         />
         <MetricCard
           title="Total Engagements (Likes + Saves)"
           value={stats.likes.toLocaleString()}
-          change="4.86% avg engagement"
+          change={stats.views > 0 ? `${data?.stats?.avgEngagementRate || "0.0%"} tỉ lệ tương tác` : "0 engagements"}
           icon={Heart}
           color="pink"
         />
         <MetricCard
           title="Total Viral Shares"
           value={stats.shares.toLocaleString()}
-          change="+24.8% distribution velocity"
+          change={stats.shares > 0 ? "Lượt chia sẻ nội dung" : "0 shares"}
           icon={Share2}
           color="emerald"
         />
@@ -132,7 +134,7 @@ export function OmniDashboard() {
                 Cross-Platform Growth Trajectory
               </h2>
               <p className="text-xs text-zinc-500 mt-0.5">
-                Aggregate audience expansion tracked daily across official APIs
+                Audience expansion and impressions computed from your connected channels
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs">
@@ -143,52 +145,80 @@ export function OmniDashboard() {
                 <span className="w-2 h-2 rounded-full bg-pink-500" /> Instagram
               </span>
               <span className="flex items-center gap-1.5 text-zinc-400">
-                <span className="w-2 h-2 rounded-full bg-sky-400" /> X
+                <span className="w-2 h-2 rounded-full bg-red-500" /> YouTube
               </span>
             </div>
           </div>
 
-          {/* Graphical Growth Bars Simulation */}
+          {/* Graphical Growth Bars dynamically rendered from real accounts */}
           <div className="space-y-4 pt-2">
-            {[
-              { label: "YouTube Studio (215K Subscribers • $4.8K/mo Affiliate)", percent: 94, color: "from-red-500 to-rose-600", gain: "+5,200 subs this week" },
-              { label: "TikTok (124.5K Followers)", percent: 85, color: "from-cyan-500 to-blue-500", gain: "+2,400 this week" },
-              { label: "Instagram (48.2K Followers)", percent: 62, color: "from-pink-500 to-rose-500", gain: "+980 this week" },
-              { label: "X / Twitter (31.2K Followers)", percent: 45, color: "from-sky-400 to-indigo-500", gain: "+450 this week" },
-              { label: "Threads (19.8K Followers)", percent: 34, color: "from-purple-500 to-violet-600", gain: "+610 this week" },
-              { label: "Pinterest (540K Monthly Views)", percent: 92, color: "from-rose-500 to-red-600", gain: "+38K impressions" },
-            ].map((item, idx) => (
-              <div key={idx} className="space-y-1.5">
-                <div className="flex justify-between text-xs">
-                  <span className="font-medium text-zinc-300">{item.label}</span>
-                  <span className="text-emerald-400 font-mono text-[11px]">{item.gain}</span>
-                </div>
-                <div className="w-full bg-zinc-800/80 h-2 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full bg-gradient-to-r ${item.color} transition-all duration-1000`}
-                    style={{ width: `${item.percent}%` }}
-                  />
-                </div>
+            {accounts.length === 0 ? (
+              <div className="py-8 text-center text-xs text-zinc-500 border border-dashed border-zinc-800 rounded-xl">
+                Chưa có tài khoản nào được kết nối. Vào tab <Link href="/accounts" className="text-cyan-400 hover:underline">Accounts & API Hub</Link> để thêm kênh.
               </div>
-            ))}
+            ) : (
+              accounts.map((acc) => {
+                const cfg = PLATFORM_CONFIGS[acc.platform as Platform] || PLATFORM_CONFIGS.TIKTOK;
+                const followers = acc.profileMeta?.followers || acc.profileMeta?.subscribers || 0;
+                const maxScale = Math.max(10000, ...accounts.map((a) => a.profileMeta?.followers || a.profileMeta?.subscribers || 0));
+                const percent = maxScale > 0 ? Math.min(100, Math.max(10, Math.round((followers / maxScale) * 100))) : 10;
+
+                const colorGradientMap: Record<string, string> = {
+                  YOUTUBE: "from-red-500 to-rose-600",
+                  TIKTOK: "from-cyan-500 to-blue-500",
+                  INSTAGRAM: "from-pink-500 to-rose-500",
+                  FACEBOOK: "from-blue-600 to-indigo-600",
+                  TWITTER: "from-sky-400 to-indigo-500",
+                  THREADS: "from-purple-500 to-violet-600",
+                  PINTEREST: "from-rose-500 to-red-600",
+                };
+
+                return (
+                  <div key={acc.id} className="space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-medium text-zinc-300">
+                        {acc.accountName} (@{acc.username}) • {cfg.name}
+                      </span>
+                      <span className="text-emerald-400 font-mono text-[11px]">
+                        {followers.toLocaleString()} {acc.platform === "YOUTUBE" ? "Subscribers" : "Followers"}
+                      </span>
+                    </div>
+                    <div className="w-full bg-zinc-800/80 h-2 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full bg-gradient-to-r ${colorGradientMap[acc.platform] || "from-cyan-500 to-blue-500"} transition-all duration-1000`}
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
 
           {/* Platform Traffic Distribution Radar */}
           <div className="pt-4 border-t border-zinc-800/60 grid grid-cols-3 gap-4 text-center">
             <div className="p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/60">
               <div className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Top Performing</div>
-              <div className="text-sm font-bold text-cyan-400 mt-1">TikTok Reels</div>
-              <div className="text-[10px] text-zinc-400 mt-0.5">44% Share of Impressions</div>
+              <div className="text-sm font-bold text-cyan-400 mt-1">
+                {platformDist.length > 0 ? `${platformDist[0]?.platform} Content` : "Chưa có dữ liệu"}
+              </div>
+              <div className="text-[10px] text-zinc-400 mt-0.5">
+                {platformDist.length > 0 ? `${platformDist[0]?.share}% Share of Views` : "0% Share"}
+              </div>
             </div>
             <div className="p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/60">
-              <div className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Highest Conversion</div>
-              <div className="text-sm font-bold text-pink-400 mt-1">Instagram Carousels</div>
-              <div className="text-[10px] text-zinc-400 mt-0.5">6.2% Click-through Rate</div>
+              <div className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Tỷ lệ tương tác</div>
+              <div className="text-sm font-bold text-pink-400 mt-1">
+                {data?.stats?.avgEngagementRate || "0.0%"}
+              </div>
+              <div className="text-[10px] text-zinc-400 mt-0.5">Likes + Comments / Views</div>
             </div>
             <div className="p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/60">
-              <div className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Viral Velocity</div>
-              <div className="text-sm font-bold text-sky-400 mt-1">X Threads</div>
-              <div className="text-[10px] text-zinc-400 mt-0.5">3.4x Retweet Multiplier</div>
+              <div className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Total Campaigns</div>
+              <div className="text-sm font-bold text-emerald-400 mt-1">
+                {posts.length} Master Posts
+              </div>
+              <div className="text-[10px] text-zinc-400 mt-0.5">Live SQLite Storage</div>
             </div>
           </div>
         </div>
@@ -198,43 +228,54 @@ export function OmniDashboard() {
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800/60">
               <h2 className="text-sm font-bold text-zinc-100">Official API Token Health</h2>
-              <span className="text-[10px] text-emerald-400 font-mono">ALL CONNECTED</span>
+              <span className="text-[10px] text-emerald-400 font-mono">
+                {accounts.length} CONNECTED
+              </span>
             </div>
 
             <div className="space-y-3 mt-4">
-              {accounts.map((acc) => {
-                const cfg = PLATFORM_CONFIGS[acc.platform as Platform] || PLATFORM_CONFIGS.TWITTER;
-                const Icon = cfg.icon;
-                return (
-                  <div
-                    key={acc.id}
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950/50 border border-zinc-800/70 hover:border-zinc-700 transition-all"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className={`p-2 rounded-lg ${cfg.badgeBg} shrink-0`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="text-xs font-semibold text-zinc-200">
-                          {acc.accountName}
+              {accounts.length === 0 ? (
+                <div className="text-center py-6 px-4 bg-zinc-950/40 rounded-xl border border-zinc-800/60">
+                  <p className="text-xs text-zinc-400 font-medium">Chưa có tài khoản nào được kết nối.</p>
+                  <p className="text-[10px] text-zinc-600 mt-1">
+                    Kết nối tài khoản mạng xã hội để quản lý và đồng bộ trạng thái token API.
+                  </p>
+                </div>
+              ) : (
+                accounts.map((acc) => {
+                  const cfg = PLATFORM_CONFIGS[acc.platform as Platform] || PLATFORM_CONFIGS.TWITTER;
+                  const Icon = cfg.icon;
+                  return (
+                    <div
+                      key={acc.id}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950/50 border border-zinc-800/70 hover:border-zinc-700 transition-all"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className={`p-2 rounded-lg ${cfg.badgeBg} shrink-0`}>
+                          <Icon className="w-4 h-4" />
                         </div>
-                        <div className="text-[10px] text-zinc-500 font-mono">
-                          @{acc.username}
+                        <div>
+                          <div className="text-xs font-semibold text-zinc-200">
+                            {acc.accountName}
+                          </div>
+                          <div className="text-[10px] text-zinc-500 font-mono">
+                            @{acc.username}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>Valid</span>
+                        </div>
+                        <div className="text-[9px] text-zinc-500 font-mono">
+                          {acc.rateLimitRemaining || 100} req left
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400">
-                        <CheckCircle2 className="w-3 h-3" />
-                        <span>Valid</span>
-                      </div>
-                      <div className="text-[9px] text-zinc-500 font-mono">
-                        {acc.rateLimitRemaining || 100} req left
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -263,7 +304,7 @@ export function OmniDashboard() {
 
         <div className="space-y-3">
           {posts.length > 0 ? (
-            posts.slice(0, 4).map((post) => (
+            posts.slice(0, 6).map((post) => (
               <div
                 key={post.id}
                 className="p-3.5 rounded-xl bg-zinc-950/60 border border-zinc-800/70 flex items-center justify-between gap-4"
@@ -302,7 +343,11 @@ export function OmniDashboard() {
                     })}
                   </div>
 
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    post.status === "PUBLISHED"
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                      : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                  }`}>
                     {post.status}
                   </span>
                 </div>
@@ -310,7 +355,7 @@ export function OmniDashboard() {
             ))
           ) : (
             <div className="py-8 text-center text-zinc-500 text-xs">
-              No recent posts yet. Launch the Composer Studio to create your first omnichannel master post!
+              No recent posts yet. Launch Composer Studio to create your first omnichannel master post!
             </div>
           )}
         </div>

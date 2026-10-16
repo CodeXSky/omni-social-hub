@@ -1,0 +1,343 @@
+{
+  "workspace": {
+    "id": "ws-affiliate-01",
+    "name": "Affiliate Media Studio",
+    "slug": "affiliate-media"
+  },
+  "accounts": [
+    {
+      "id": "acc-youtube-01",
+      "workspaceId": "ws-affiliate-01",
+      "platform": "YOUTUBE",
+      "accountId": "yt_affiliate_studio",
+      "accountName": "Tech Review & Setup VN",
+      "username": "techreviewvn",
+      "profilePic": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80",
+      "accessToken": "93f6cc232fcb3e82d3fc94ebbda629c0:bc4e20de79e0e9d9ab6c3d4e85164d7a:10a40d42cd6df0b0f8873cfbd05c56deea061ab9af3fdb",
+      "refreshToken": "79e1af0ed08665a893683deb8d5b6567:08f2273d192b39713a5718089250cba6:fe0ee555a65c76e0106f0ddbdebf313642a3975a3fbc4e47b3",
+      "tokenExpiresAt": "2026-12-10T11:37:51.627Z",
+      "rateLimitRemaining": 9850,
+      "profileMeta": {
+        "subscribers": 215000,
+        "verified": true,
+        "monetizationStatus": "ACTIVE",
+        "affiliateRevenue": "$4,820/mo"
+      },
+      "status": "ACTIVE"
+    },
+    {
+      "id": "acc-tiktok-01",
+      "workspaceId": "ws-affiliate-01",
+      "platform": "TIKTOK",
+      "accountId": "tt_affiliate_viral",
+      "accountName": "Góc Setup Thông Minh",
+      "username": "gocsetup.vn",
+      "profilePic": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
+      "accessToken": "2535e9eb835192cc2b8127d4015805ed:0463c71845e639b1c873d8af3457d2fe:02ac794dc130a0433e6d8dcb9fc5a16b83ec5ff22e2e",
+      "refreshToken": "c28482a95e2eba2a683a5a75e68bc375:a9ba82c0c203b33a5d01c0ae6446eeb2:3bc6c206e2ca406541e9ec7a1b84b049516102de4ae58ff3",
+      "tokenExpiresAt": "2026-12-10T11:37:51.628Z",
+      "rateLimitRemaining": 95,
+      "profileMeta": {
+        "followers": 124500,
+        "verified": true,
+        "engagementRate": "5.8%"
+      },
+      "status": "ACTIVE"
+    },
+    {
+      "id": "acc-instagram-01",
+      "workspaceId": "ws-affiliate-01",
+      "platform": "INSTAGRAM",
+      "accountId": "ig_affiliate_creators",
+      "accountName": "Góc Setup & Decor",
+      "username": "gocsetup.vietnam",
+      "profilePic": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      "accessToken": "af018587afcc37825bb78ed95b384e4c:9cbde456581765adec856e07e2c2d9ea:1720fa909f14c0e80500b3e0b7cb34eab3980b297f43ea",
+      "refreshToken": null,
+      "tokenExpiresAt": "2026-12-10T11:37:51.628Z",
+      "rateLimitRemaining": 980,
+      "profileMeta": {
+        "followers": 48200,
+        "verified": true,
+        "engagementRate": "6.2%"
+      },
+      "status": "ACTIVE"
+    },
+    {
+      "id": "acc-facebook-01",
+      "workspaceId": "ws-affiliate-01",
+      "platform": "FACEBOOK",
+      "accountId": "fb_page_techdeal",
+      "accountName": "Nghiện Setup & Mê Đồ Công Nghệ",
+      "username": "nghiensetup.vn",
+      "profilePic": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80",
+      "accessToken": "3478d0e24542766d7cd084f2498a7987:baa24333298bbac7a0fb1694e858cb2a:2305bac82ff92333a0608f2c7250860974a9",
+      "refreshToken": null,
+      "tokenExpiresAt": "2026-12-10T11:37:51.628Z",
+      "rateLimitRemaining": 990,
+      "profileMeta": {
+        "followers": 89400,
+        "pageId": "109384",
+        "engagementRate": "2.9%"
+      },
+      "status": "ACTIVE"
+    },
+    {
+      "id": "acc-twitter-01",
+      "workspaceId": "ws-affiliate-01",
+      "platform": "TWITTER",
+      "accountId": "tw_tech_curator",
+      "accountName": "VN Workspace Inspiration",
+      "username": "VNWorkspace",
+      "profilePic": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      "accessToken": "b6ff0ea24c8fe34c2bd47480a9ab6508:cd33177852cb83d6cccd9a74a4326490:31ade6050fe4615ab78a1a01a82bf3be6b",
+      "refreshToken": null,
+      "tokenExpiresAt": "2026-10-18T11:37:51.629Z",
+      "rateLimitRemaining": 48,
+      "profileMeta": {
+        "followers": 31200,
+        "verified": true,
+        "engagementRate": "3.4%"
+      },
+      "status": "ACTIVE"
+    },
+    {
+      "id": "acc-threads-01",
+      "workspaceId": "ws-affiliate-01",
+      "platform": "THREADS",
+      "accountId": "th_gocsetup",
+      "accountName": "Góc Setup Threads",
+      "username": "gocsetup.threads",
+      "profilePic": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
+      "accessToken": "b4fb19f1375f9838869822b300908eaf:06e545241d28add7eb64a89781ebd8cd:09b1ec5137edcb2dfaabeac135ee42f7225404dc68fe7b",
+      "refreshToken": null,
+      "tokenExpiresAt": "2026-12-10T11:37:51.629Z",
+      "rateLimitRemaining": 240,
+      "profileMeta": {
+        "followers": 19800,
+        "verified": false,
+        "engagementRate": "4.1%"
+      },
+      "status": "ACTIVE"
+    },
+    {
+      "id": "acc-pinterest-01",
+      "workspaceId": "ws-affiliate-01",
+      "platform": "PINTEREST",
+      "accountId": "pin_decor_ideas",
+      "accountName": "Desk Setup Vietnam Ideas",
+      "username": "desksetupvn",
+      "profilePic": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80",
+      "accessToken": "550e3594adaa85425fbf5df687b36d1e:85c6e167311da02e058bd8453fa5d11c:63450925bc2f5ea933dbb9f2b8c0e3686c3f8c",
+      "refreshToken": null,
+      "tokenExpiresAt": "2026-11-10T11:37:51.629Z",
+      "rateLimitRemaining": 1000,
+      "profileMeta": {
+        "monthlyViews": 540000,
+        "defaultBoardId": "board_desk_setup"
+      },
+      "status": "ACTIVE"
+    }
+  ],
+  "posts": [
+    {
+      "id": "post-lymax-screenbar",
+      "workspaceId": "ws-affiliate-01",
+      "authorId": "usr-admin-01",
+      "title": "Đèn Treo Màn Hình Lymax GJS-D013 Chống Mỏi Mắt",
+      "rawCaption": "Đèn treo màn hình Lymax bảo vệ mắt cực đỉnh cho dân văn phòng và coder cày đêm! Không lo chói lóa, 3 chế độ sáng cảm ứng mượt mà. Link Shopee giỏ hàng bên dưới nhé cả nhà!",
+      "rawMediaUrls": [
+        "https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=1200&auto=format&fit=crop&q=80"
+      ],
+      "scheduledAt": null,
+      "publishedAt": "2026-10-11T03:37:51.629Z",
+      "status": "PUBLISHED",
+      "createdAt": "2026-10-11T01:37:51.629Z",
+      "updatedAt": "2026-10-11T03:37:51.629Z",
+      "variants": [
+        {
+          "id": "var-lymax-tt",
+          "masterPostId": "post-lymax-screenbar",
+          "socialAccountId": "acc-tiktok-01",
+          "platform": "TIKTOK",
+          "adaptedContent": "🔥 Chống mỏi mắt tức thì khi cày đêm với đèn treo Lymax GJS-D013!\n3 chế độ nhiệt màu, kẹp cực chắc. Bấm vào giỏ hàng vàng góc trái bên dưới để săn deal hời nhé! 👇 #denmanhinh #lymax #desksetup #gocsetup",
+          "mediaUrls": [
+            "https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=1200"
+          ],
+          "platformSpecificPayload": {
+            "hook": "🔥 Cứu tinh cày đêm cho dân văn phòng"
+          },
+          "status": "PUBLISHED",
+          "externalPostId": "tt_pub_782910",
+          "publishedAt": "2026-10-11T03:37:51.629Z",
+          "errorLog": null,
+          "views": 45200,
+          "likes": 3820,
+          "comments": 412,
+          "shares": 680
+        },
+        {
+          "id": "var-lymax-ig",
+          "masterPostId": "post-lymax-screenbar",
+          "socialAccountId": "acc-instagram-01",
+          "platform": "INSTAGRAM",
+          "adaptedContent": "Góc làm việc gọn gàng và không còn lo chói mắt với đèn treo màn hình Lymax ✨\n.\n3 chế độ màu 2900K - 6000K bảo vệ thị lực tối đa.\nLink mua ưu đãi Shopee tại link bio!\n#desksetup #minimalsetup #lymax #workspace",
+          "mediaUrls": [
+            "https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=1200"
+          ],
+          "platformSpecificPayload": {},
+          "status": "PUBLISHED",
+          "externalPostId": "ig_pub_912048",
+          "publishedAt": "2026-10-11T03:37:51.629Z",
+          "errorLog": null,
+          "views": 24800,
+          "likes": 2150,
+          "comments": 185,
+          "shares": 340
+        },
+        {
+          "id": "var-lymax-yt",
+          "masterPostId": "post-lymax-screenbar",
+          "socialAccountId": "acc-youtube-01",
+          "platform": "YOUTUBE",
+          "adaptedContent": "Trên tay Đèn Treo Màn Hình Lymax: Có thực sự chống mỏi mắt và đáng mua trong tầm giá 300k? Link Shopee chính hãng ở phần mô tả & bình luận ghim!",
+          "mediaUrls": [
+            "https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=1200"
+          ],
+          "platformSpecificPayload": {},
+          "status": "PUBLISHED",
+          "externalPostId": "yt_pub_339102",
+          "publishedAt": "2026-10-11T03:37:51.629Z",
+          "errorLog": null,
+          "views": 52400,
+          "likes": 4210,
+          "comments": 630,
+          "shares": 410
+        },
+        {
+          "id": "var-lymax-fb",
+          "masterPostId": "post-lymax-screenbar",
+          "socialAccountId": "acc-facebook-01",
+          "platform": "FACEBOOK",
+          "adaptedContent": "Anh em hay làm việc đêm thì nên sắm ngay em đèn Lymax này. Ánh sáng chiếu lệch không chói màn hình, cảm ứng 1 chạm cực nhạy. Link Shopee đang có mã giảm: https://s.shopee.vn/8pmRkckDvo",
+          "mediaUrls": [
+            "https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=1200"
+          ],
+          "platformSpecificPayload": {},
+          "status": "PUBLISHED",
+          "externalPostId": "fb_pub_201948",
+          "publishedAt": "2026-10-11T03:37:51.629Z",
+          "errorLog": null,
+          "views": 18400,
+          "likes": 1320,
+          "comments": 194,
+          "shares": 190
+        }
+      ]
+    },
+    {
+      "id": "post-logitech-lift",
+      "workspaceId": "ws-affiliate-01",
+      "authorId": "usr-admin-01",
+      "title": "Chuột Công Thái Học Logitech Lift Vertical Chống Đau Cổ Tay",
+      "rawCaption": "Chuột công thái học Logitech Lift Vertical góc nghiêng tự nhiên 57 độ, click êm ái Silent Clicks. Cứu cánh cho ai hay mỏi cổ tay sau 8 tiếng văn phòng!",
+      "rawMediaUrls": [
+        "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=1200&auto=format&fit=crop&q=80"
+      ],
+      "scheduledAt": null,
+      "publishedAt": "2026-10-10T07:37:51.629Z",
+      "status": "PUBLISHED",
+      "createdAt": "2026-10-10T05:37:51.629Z",
+      "updatedAt": "2026-10-10T07:37:51.629Z",
+      "variants": [
+        {
+          "id": "var-logi-tt",
+          "masterPostId": "post-logitech-lift",
+          "socialAccountId": "acc-tiktok-01",
+          "platform": "TIKTOK",
+          "adaptedContent": "🖱️ Tạm biệt đau cổ tay với chuột công thái học Logitech Lift! Góc nghiêng 57 độ chuẩn khoa học. Click ngay giỏ hàng vàng góc trái để nhận ưu đãi! #logitech #logitechlift #ergonomic #congthaihoc",
+          "mediaUrls": [
+            "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=1200"
+          ],
+          "platformSpecificPayload": {
+            "hook": "🖱️ Đau cổ tay sau 8h văn phòng?"
+          },
+          "status": "PUBLISHED",
+          "externalPostId": "tt_pub_109283",
+          "publishedAt": "2026-10-10T07:37:51.629Z",
+          "errorLog": null,
+          "views": 38900,
+          "likes": 3100,
+          "comments": 298,
+          "shares": 512
+        },
+        {
+          "id": "var-logi-tw",
+          "masterPostId": "post-logitech-lift",
+          "socialAccountId": "acc-twitter-01",
+          "platform": "TWITTER",
+          "adaptedContent": "Switching to Logitech Lift Vertical was the best ergonomic upgrade for 2026. Silent clicks & dual Bluetooth/Logi Bolt. Highly recommended! #Logitech #Workstation",
+          "mediaUrls": [
+            "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=1200"
+          ],
+          "platformSpecificPayload": {},
+          "status": "PUBLISHED",
+          "externalPostId": "tw_pub_992101",
+          "publishedAt": "2026-10-10T07:37:51.629Z",
+          "errorLog": null,
+          "views": 12400,
+          "likes": 890,
+          "comments": 84,
+          "shares": 215
+        }
+      ]
+    },
+    {
+      "id": "post-scheduled-keyboard",
+      "workspaceId": "ws-affiliate-01",
+      "authorId": "usr-admin-01",
+      "title": "Bàn Phím Cơ Attack Shark X820 Ultra Không Dây 3 Mode",
+      "rawCaption": "Unboxing và sound test siêu phẩm bàn phím cơ không dây Attack Shark X820 Ultra: Gasket mount, hotswap 5 pin, led RGB từng phím cực mịn.",
+      "rawMediaUrls": [
+        "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=1200&auto=format&fit=crop&q=80"
+      ],
+      "scheduledAt": "2026-10-13T11:37:51.629Z",
+      "publishedAt": null,
+      "status": "QUEUED",
+      "createdAt": "2026-10-11T11:37:51.629Z",
+      "updatedAt": "2026-10-11T11:37:51.629Z",
+      "variants": [
+        {
+          "id": "var-keyboard-tt",
+          "masterPostId": "post-scheduled-keyboard",
+          "socialAccountId": "acc-tiktok-01",
+          "platform": "TIKTOK",
+          "adaptedContent": "Gõ êm như nhung với Attack Shark X820 Ultra! Sound test switch stock siêu mượt. Đặt lịch xem video nhé! #banphimco #attackshark #asmrkeyboard",
+          "mediaUrls": [
+            "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=1200"
+          ],
+          "platformSpecificPayload": {},
+          "status": "QUEUED",
+          "externalPostId": null,
+          "publishedAt": null,
+          "errorLog": null
+        },
+        {
+          "id": "var-keyboard-th",
+          "masterPostId": "post-scheduled-keyboard",
+          "socialAccountId": "acc-threads-01",
+          "platform": "THREADS",
+          "adaptedContent": "Anh em thích gõ phím Linear hay Tactile hơn? Vừa nhận được mẫu X820 Ultra mới nhất âm thanh thocky mê chữ ê kéo dài!",
+          "mediaUrls": [
+            "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=1200"
+          ],
+          "platformSpecificPayload": {},
+          "status": "QUEUED",
+          "externalPostId": null,
+          "publishedAt": null,
+          "errorLog": null
+        }
+      ]
+    }
+  ]
+}

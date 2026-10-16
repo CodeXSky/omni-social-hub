@@ -1,3 +1,6 @@
+import Database from "better-sqlite3";
+import path from "path";
+import fs from "fs";
 import { Platform, PostStatus, VariantStatus } from "@prisma/client";
 import { encryptToken } from "./crypto";
 
@@ -5,6 +8,16 @@ export interface DBWorkspace {
   id: string;
   name: string;
   slug: string;
+}
+
+export interface DBOAuthConfig {
+  platform: Platform;
+  clientId: string;
+  clientSecret: string;
+  redirectUri?: string;
+  scopes?: string;
+  isEnabled: boolean;
+  updatedAt: string;
 }
 
 export interface DBSocialAccount {
@@ -23,6 +36,25 @@ export interface DBSocialAccount {
   status: string;
 }
 
+export interface DBPostVariant {
+  id: string;
+  masterPostId: string;
+  socialAccountId: string | null;
+  platform: Platform;
+  adaptedContent: string;
+  mediaUrls: string[];
+  platformSpecificPayload: Record<string, any>;
+  status: VariantStatus;
+  externalPostId: string | null;
+  publishedAt: string | null;
+  errorLog: string | null;
+  views?: number;
+  likes?: number;
+  comments?: number;
+  shares?: number;
+  socialAccount?: DBSocialAccount | null;
+}
+
 export interface DBMasterPost {
   id: string;
   workspaceId: string;
@@ -38,255 +70,377 @@ export interface DBMasterPost {
   variants: DBPostVariant[];
 }
 
-export interface DBPostVariant {
-  id: string;
-  masterPostId: string;
-  socialAccountId: string | null;
-  platform: Platform;
-  adaptedContent: string;
-  mediaUrls: string[];
-  platformSpecificPayload: Record<string, any>;
-  status: VariantStatus;
-  externalPostId: string | null;
-  publishedAt: string | null;
-  errorLog: string | null;
-  socialAccount?: DBSocialAccount | null;
-}
+class SQLiteDatabase {
+  private db: Database.Database;
 
-// In-Memory Global Store singleton
-class MockDatabase {
-  private workspace: DBWorkspace = {
-    id: "ws-acme-prod-01",
-    name: "Acme Media & Co",
-    slug: "acme-media",
-  };
+  constructor() {
+    const dataDir = path.join(process.cwd(), "data");
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
 
-  private accounts: DBSocialAccount[] = [
-    {
-      id: "acc-youtube-01",
-      workspaceId: "ws-acme-prod-01",
-      platform: Platform.YOUTUBE,
-      accountId: "yt_acme_official",
-      accountName: "Acme Creator Studio",
-      username: "AcmeCreatorOfficial",
-      profilePic: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80",
-      accessToken: encryptToken("mock_youtube_token_demo_mode"),
-      refreshToken: encryptToken("mock_youtube_refresh_demo_mode"),
-      tokenExpiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-      rateLimitRemaining: 9850,
-      profileMeta: { subscribers: 215000, verified: true, monetizationStatus: "ACTIVE", affiliateRevenue: "$4,820/mo" },
-      status: "ACTIVE",
-    },
-    {
-      id: "acc-tiktok-01",
-      workspaceId: "ws-acme-prod-01",
-      platform: Platform.TIKTOK,
-      accountId: "tt_acme_viral",
-      accountName: "Acme Daily",
-      username: "acmedaily",
-      profilePic: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
-      accessToken: encryptToken("mock_tiktok_token_demo_mode"),
-      refreshToken: encryptToken("mock_tiktok_refresh_demo_mode"),
-      tokenExpiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-      rateLimitRemaining: 95,
-      profileMeta: { followers: 124500, verified: true, engagementRate: "5.8%" },
-      status: "ACTIVE",
-    },
-    {
-      id: "acc-instagram-01",
-      workspaceId: "ws-acme-prod-01",
-      platform: Platform.INSTAGRAM,
-      accountId: "ig_acme_official",
-      accountName: "Acme Creators",
-      username: "acme.official",
-      profilePic: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      accessToken: encryptToken("mock_meta_ig_token_demo_mode"),
-      refreshToken: null,
-      tokenExpiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-      rateLimitRemaining: 980,
-      profileMeta: { followers: 48200, verified: true, engagementRate: "6.2%" },
-      status: "ACTIVE",
-    },
-    {
-      id: "acc-twitter-01",
-      workspaceId: "ws-acme-prod-01",
-      platform: Platform.TWITTER,
-      accountId: "tw_acme_news",
-      accountName: "Acme Hub",
-      username: "AcmeHub",
-      profilePic: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-      accessToken: encryptToken("mock_x_token_demo_mode"),
-      refreshToken: null,
-      tokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      rateLimitRemaining: 48,
-      profileMeta: { followers: 31200, verified: true, engagementRate: "3.4%" },
-      status: "ACTIVE",
-    },
-    {
-      id: "acc-threads-01",
-      workspaceId: "ws-acme-prod-01",
-      platform: Platform.THREADS,
-      accountId: "th_acme_threads",
-      accountName: "Acme Threads",
-      username: "acme.official",
-      profilePic: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
-      accessToken: encryptToken("mock_threads_token_demo_mode"),
-      refreshToken: null,
-      tokenExpiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-      rateLimitRemaining: 240,
-      profileMeta: { followers: 19800, verified: false, engagementRate: "4.1%" },
-      status: "ACTIVE",
-    },
-    {
-      id: "acc-facebook-01",
-      workspaceId: "ws-acme-prod-01",
-      platform: Platform.FACEBOOK,
-      accountId: "fb_page_109384",
-      accountName: "Acme Global Page",
-      username: "AcmeGlobalOfficial",
-      profilePic: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80",
-      accessToken: encryptToken("mock_fb_token_demo_mode"),
-      refreshToken: null,
-      tokenExpiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-      rateLimitRemaining: 990,
-      profileMeta: { followers: 89400, pageId: "109384", engagementRate: "2.9%" },
-      status: "ACTIVE",
-    },
-    {
-      id: "acc-pinterest-01",
-      workspaceId: "ws-acme-prod-01",
-      platform: Platform.PINTEREST,
-      accountId: "pin_acme_boards",
-      accountName: "Acme Design Boards",
-      username: "acmedesign",
-      profilePic: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80",
-      accessToken: encryptToken("mock_pin_token_demo_mode"),
-      refreshToken: null,
-      tokenExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      rateLimitRemaining: 1000,
-      profileMeta: { monthlyViews: 540000, defaultBoardId: "board_tech_trends" },
-      status: "ACTIVE",
-    },
-  ];
+    const dbPath = path.join(dataDir, "omnisocial.sqlite");
+    this.db = new Database(dbPath);
+    // Enable WAL mode for high concurrent throughput & reliability
+    this.db.pragma("journal_mode = WAL");
 
-  private posts: DBMasterPost[] = [
-    {
-      id: "post-seed-01",
-      workspaceId: "ws-acme-prod-01",
-      authorId: "usr-alex-01",
-      title: "OmniSocial Hub 2.0 Feature Release",
-      rawCaption: "We just rolled out the all-new OmniSocial Hub 2.0 with instant cross-platform AI adaptation! Schedule to TikTok, Instagram, X, Threads, Facebook, and Pinterest in one click.",
-      rawMediaUrls: [
-        "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
-      ],
-      scheduledAt: null,
-      publishedAt: new Date(Date.now() - 3600 * 1000 * 4).toISOString(),
-      status: PostStatus.PUBLISHED,
-      createdAt: new Date(Date.now() - 3600 * 1000 * 5).toISOString(),
-      updatedAt: new Date(Date.now() - 3600 * 1000 * 4).toISOString(),
-      variants: [
-        {
-          id: "var-01-tt",
-          masterPostId: "post-seed-01",
-          socialAccountId: "acc-tiktok-01",
-          platform: Platform.TIKTOK,
-          adaptedContent: "🔥 Stop scrolling if you want to level up:\n\nOmniSocial Hub 2.0 is live! Connect all channels with AI.\n\nDrop your thoughts below 👇 #TechTok #ViralTips",
-          mediaUrls: ["https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200"],
-          platformSpecificPayload: { hook: "🔥 Stop scrolling" },
-          status: VariantStatus.PUBLISHED,
-          externalPostId: "tt_pub_994210",
-          publishedAt: new Date(Date.now() - 3600 * 1000 * 4).toISOString(),
-          errorLog: null,
-        },
-        {
-          id: "var-01-ig",
-          masterPostId: "post-seed-01",
-          socialAccountId: "acc-instagram-01",
-          platform: Platform.INSTAGRAM,
-          adaptedContent: "We just rolled out OmniSocial Hub 2.0!\n.\n.\nDouble tap if this resonated! ❤️\nSave for later 📌\n#InstagramGrowth #CreatorHustle",
-          mediaUrls: ["https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200"],
-          platformSpecificPayload: {},
-          status: VariantStatus.PUBLISHED,
-          externalPostId: "ig_pub_488219",
-          publishedAt: new Date(Date.now() - 3600 * 1000 * 4).toISOString(),
-          errorLog: null,
-        },
-        {
-          id: "var-01-tw",
-          masterPostId: "post-seed-01",
-          socialAccountId: "acc-twitter-01",
-          platform: Platform.TWITTER,
-          adaptedContent: "OmniSocial Hub 2.0 is live! Connect all channels with AI. #BuildInPublic #TechNews",
-          mediaUrls: ["https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200"],
-          platformSpecificPayload: {},
-          status: VariantStatus.PUBLISHED,
-          externalPostId: "tw_pub_1829491",
-          publishedAt: new Date(Date.now() - 3600 * 1000 * 4).toISOString(),
-          errorLog: null,
-        },
-      ],
-    },
-    {
-      id: "post-seed-02",
-      workspaceId: "ws-acme-prod-01",
-      authorId: "usr-alex-01",
-      title: "Behind The Scenes: Engineering Team",
-      rawCaption: "A sneak peek behind how our engineering team crafts zero-latency asynchronous posting pipelines.",
-      rawMediaUrls: [
-        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&auto=format&fit=crop&q=80",
-      ],
-      scheduledAt: new Date(Date.now() + 86400 * 1000 * 2).toISOString(),
-      publishedAt: null,
-      status: PostStatus.QUEUED,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      variants: [
-        {
-          id: "var-02-th",
-          masterPostId: "post-seed-02",
-          socialAccountId: "acc-threads-01",
-          platform: Platform.THREADS,
-          adaptedContent: "A sneak peek behind how our team crafts zero-latency posting. What's your top scaling challenge? 👇",
-          mediaUrls: ["https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200"],
-          platformSpecificPayload: {},
-          status: VariantStatus.QUEUED,
-          externalPostId: null,
-          publishedAt: null,
-          errorLog: null,
-        },
-      ],
-    },
-  ];
+    this.initTables();
+    this.seedInitialDataIfEmpty();
+  }
 
-  getWorkspace() {
-    return this.workspace;
+  private initTables() {
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS workspaces (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        slug TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS social_accounts (
+        id TEXT PRIMARY KEY,
+        workspaceId TEXT NOT NULL,
+        platform TEXT NOT NULL,
+        accountId TEXT NOT NULL,
+        accountName TEXT NOT NULL,
+        username TEXT NOT NULL,
+        profilePic TEXT,
+        accessToken TEXT,
+        refreshToken TEXT,
+        tokenExpiresAt TEXT,
+        rateLimitRemaining INTEGER DEFAULT 1000,
+        profileMeta TEXT,
+        status TEXT DEFAULT 'ACTIVE'
+      );
+
+      CREATE TABLE IF NOT EXISTS master_posts (
+        id TEXT PRIMARY KEY,
+        workspaceId TEXT NOT NULL,
+        authorId TEXT NOT NULL,
+        title TEXT NOT NULL,
+        rawCaption TEXT,
+        rawMediaUrls TEXT,
+        scheduledAt TEXT,
+        publishedAt TEXT,
+        status TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS post_variants (
+        id TEXT PRIMARY KEY,
+        masterPostId TEXT NOT NULL,
+        socialAccountId TEXT,
+        platform TEXT NOT NULL,
+        adaptedContent TEXT,
+        mediaUrls TEXT,
+        platformSpecificPayload TEXT,
+        status TEXT NOT NULL,
+        externalPostId TEXT,
+        publishedAt TEXT,
+        errorLog TEXT,
+        views INTEGER DEFAULT 0,
+        likes INTEGER DEFAULT 0,
+        comments INTEGER DEFAULT 0,
+        shares INTEGER DEFAULT 0,
+        FOREIGN KEY (masterPostId) REFERENCES master_posts (id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS oauth_configs (
+        platform TEXT PRIMARY KEY,
+        clientId TEXT NOT NULL,
+        clientSecret TEXT NOT NULL,
+        redirectUri TEXT,
+        scopes TEXT,
+        isEnabled INTEGER DEFAULT 1,
+        updatedAt TEXT
+      );
+    `);
+  }
+
+  private seedInitialDataIfEmpty() {
+    const countWorkspaces = this.db.prepare("SELECT count(*) as count FROM workspaces").get() as { count: number };
+    if (countWorkspaces.count === 0) {
+      this.db.prepare("INSERT INTO workspaces (id, name, slug) VALUES (?, ?, ?)").run(
+        "ws-affiliate-01",
+        "Affiliate Media Studio",
+        "affiliate-media"
+      );
+    }
+  }
+
+  clearAllPosts() {
+    this.db.prepare("DELETE FROM post_variants").run();
+    this.db.prepare("DELETE FROM master_posts").run();
+  }
+
+  getWorkspace(): DBWorkspace {
+    const row = this.db.prepare("SELECT * FROM workspaces LIMIT 1").get() as any;
+    return row || { id: "ws-affiliate-01", name: "Affiliate Media Studio", slug: "affiliate-media" };
   }
 
   getAccounts(): DBSocialAccount[] {
-    return [...this.accounts];
+    const rows = this.db.prepare("SELECT * FROM social_accounts ORDER BY id ASC").all() as any[];
+    return rows.map((r) => ({
+      ...r,
+      profileMeta: r.profileMeta ? JSON.parse(r.profileMeta) : {},
+    }));
   }
 
   getAccountById(id: string): DBSocialAccount | undefined {
-    return this.accounts.find((a) => a.id === id);
+    const row = this.db.prepare("SELECT * FROM social_accounts WHERE id = ?").get(id) as any;
+    if (!row) return undefined;
+    return {
+      ...row,
+      profileMeta: row.profileMeta ? JSON.parse(row.profileMeta) : {},
+    };
   }
 
   getAccountByPlatform(platform: Platform): DBSocialAccount | undefined {
-    return this.accounts.find((a) => a.platform === platform);
+    const row = this.db.prepare("SELECT * FROM social_accounts WHERE platform = ? LIMIT 1").get(platform) as any;
+    if (!row) return undefined;
+    return {
+      ...row,
+      profileMeta: row.profileMeta ? JSON.parse(row.profileMeta) : {},
+    };
+  }
+
+  addAccount(account: DBSocialAccount) {
+    this.db.prepare(`
+      INSERT INTO social_accounts (
+        id, workspaceId, platform, accountId, accountName, username, profilePic,
+        accessToken, refreshToken, tokenExpiresAt, rateLimitRemaining, profileMeta, status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      account.id,
+      account.workspaceId,
+      account.platform,
+      account.accountId,
+      account.accountName,
+      account.username,
+      account.profilePic,
+      account.accessToken,
+      account.refreshToken,
+      account.tokenExpiresAt,
+      account.rateLimitRemaining,
+      JSON.stringify(account.profileMeta || {}),
+      account.status
+    );
+    return account;
   }
 
   updateAccount(id: string, patch: Partial<DBSocialAccount>) {
-    const idx = this.accounts.findIndex((a) => a.id === id);
-    if (idx !== -1) {
-      this.accounts[idx] = { ...this.accounts[idx], ...patch };
-      return this.accounts[idx];
+    const acc = this.getAccountById(id);
+    if (!acc) return null;
+    const updated = { ...acc, ...patch };
+    this.db.prepare(`
+      UPDATE social_accounts SET
+        accountName = ?, username = ?, profilePic = ?, accessToken = ?, refreshToken = ?,
+        tokenExpiresAt = ?, rateLimitRemaining = ?, profileMeta = ?, status = ?
+      WHERE id = ?
+    `).run(
+      updated.accountName,
+      updated.username,
+      updated.profilePic,
+      updated.accessToken,
+      updated.refreshToken,
+      updated.tokenExpiresAt,
+      updated.rateLimitRemaining,
+      JSON.stringify(updated.profileMeta || {}),
+      updated.status,
+      id
+    );
+    return updated;
+  }
+
+  deleteAccount(id: string) {
+    this.db.prepare("DELETE FROM social_accounts WHERE id = ?").run(id);
+  }
+
+  upsertAccount(account: DBSocialAccount) {
+    const existing = this.db.prepare(
+      "SELECT id FROM social_accounts WHERE platform = ? AND (accountId = ? OR username = ?) LIMIT 1"
+    ).get(account.platform, account.accountId, account.username) as { id: string } | undefined;
+
+    if (existing) {
+      return this.updateAccount(existing.id, account);
+    } else {
+      return this.addAccount(account);
+    }
+  }
+
+  getOAuthConfig(platform: Platform): DBOAuthConfig | null {
+    const row = this.db.prepare("SELECT * FROM oauth_configs WHERE platform = ?").get(platform) as any;
+    if (row) {
+      return {
+        ...row,
+        isEnabled: Boolean(row.isEnabled),
+      };
     }
     return null;
   }
 
-  getPosts(): DBMasterPost[] {
-    return [...this.posts].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  getAllOAuthConfigs(): Record<string, DBOAuthConfig> {
+    const rows = this.db.prepare("SELECT * FROM oauth_configs").all() as any[];
+    const result: Record<string, DBOAuthConfig> = {};
+    for (const r of rows) {
+      result[r.platform] = {
+        ...r,
+        isEnabled: Boolean(r.isEnabled),
+      };
+    }
+    return result;
+  }
+
+  saveOAuthConfig(config: { platform: Platform; clientId: string; clientSecret: string; redirectUri?: string; scopes?: string }) {
+    this.db.prepare(`
+      INSERT INTO oauth_configs (platform, clientId, clientSecret, redirectUri, scopes, isEnabled, updatedAt)
+      VALUES (?, ?, ?, ?, ?, 1, ?)
+      ON CONFLICT(platform) DO UPDATE SET
+        clientId = excluded.clientId,
+        clientSecret = excluded.clientSecret,
+        redirectUri = excluded.redirectUri,
+        scopes = excluded.scopes,
+        updatedAt = excluded.updatedAt
+    `).run(
+      config.platform,
+      config.clientId,
+      config.clientSecret,
+      config.redirectUri || null,
+      config.scopes || null,
+      new Date().toISOString()
     );
+  }
+
+  deleteOAuthConfig(platform: Platform) {
+    this.db.prepare("DELETE FROM oauth_configs WHERE platform = ?").run(platform);
+  }
+
+  getPosts(): DBMasterPost[] {
+    const postRows = this.db.prepare("SELECT * FROM master_posts ORDER BY createdAt DESC").all() as any[];
+    const variantStmt = this.db.prepare("SELECT * FROM post_variants WHERE masterPostId = ?");
+
+    return postRows.map((p) => {
+      const variants = (variantStmt.all(p.id) as any[]).map((v) => ({
+        ...v,
+        mediaUrls: v.mediaUrls ? JSON.parse(v.mediaUrls) : [],
+        platformSpecificPayload: v.platformSpecificPayload ? JSON.parse(v.platformSpecificPayload) : {},
+        socialAccount: this.getAccountById(v.socialAccountId) || null,
+      }));
+
+      return {
+        ...p,
+        rawMediaUrls: p.rawMediaUrls ? JSON.parse(p.rawMediaUrls) : [],
+        variants,
+      };
+    });
+  }
+
+  getPostById(id: string): DBMasterPost | undefined {
+    const postRow = this.db.prepare("SELECT * FROM master_posts WHERE id = ?").get(id) as any;
+    if (!postRow) return undefined;
+
+    const variantRows = this.db.prepare("SELECT * FROM post_variants WHERE masterPostId = ?").all(id) as any[];
+    const variants = variantRows.map((v) => ({
+      ...v,
+      mediaUrls: v.mediaUrls ? JSON.parse(v.mediaUrls) : [],
+      platformSpecificPayload: v.platformSpecificPayload ? JSON.parse(v.platformSpecificPayload) : {},
+      socialAccount: this.getAccountById(v.socialAccountId) || null,
+    }));
+
+    return {
+      ...postRow,
+      rawMediaUrls: postRow.rawMediaUrls ? JSON.parse(postRow.rawMediaUrls) : [],
+      variants,
+    };
+  }
+
+  updatePost(id: string, patch: Partial<DBMasterPost>): DBMasterPost | null {
+    const post = this.getPostById(id);
+    if (!post) return null;
+
+    const updated = { ...post, ...patch, updatedAt: new Date().toISOString() };
+    this.db.prepare(`
+      UPDATE master_posts SET
+        title = ?, rawCaption = ?, rawMediaUrls = ?, scheduledAt = ?, publishedAt = ?, status = ?, updatedAt = ?
+      WHERE id = ?
+    `).run(
+      updated.title,
+      updated.rawCaption,
+      JSON.stringify(updated.rawMediaUrls || []),
+      updated.scheduledAt || null,
+      updated.publishedAt || null,
+      updated.status,
+      updated.updatedAt,
+      id
+    );
+
+    return this.getPostById(id) || null;
+  }
+
+  getVariantById(id: string): DBPostVariant | undefined {
+    const row = this.db.prepare("SELECT * FROM post_variants WHERE id = ?").get(id) as any;
+    if (!row) return undefined;
+    return {
+      ...row,
+      mediaUrls: row.mediaUrls ? JSON.parse(row.mediaUrls) : [],
+      platformSpecificPayload: row.platformSpecificPayload ? JSON.parse(row.platformSpecificPayload) : {},
+      socialAccount: this.getAccountById(row.socialAccountId) || null,
+    };
+  }
+
+  getDueScheduledPosts(): DBMasterPost[] {
+    const nowIso = new Date().toISOString();
+    const rows = this.db.prepare(`
+      SELECT id FROM master_posts 
+      WHERE status = 'QUEUED' 
+      AND scheduledAt IS NOT NULL 
+      AND scheduledAt <= ?
+    `).all(nowIso) as { id: string }[];
+
+    return rows.map((r) => this.getPostById(r.id)!).filter(Boolean);
+  }
+
+  updateVariant(id: string, patch: Partial<DBPostVariant>): DBPostVariant | null {
+    const row = this.db.prepare("SELECT * FROM post_variants WHERE id = ?").get(id) as any;
+    if (!row) return null;
+
+    const current: DBPostVariant = {
+      ...row,
+      mediaUrls: row.mediaUrls ? JSON.parse(row.mediaUrls) : [],
+      platformSpecificPayload: row.platformSpecificPayload ? JSON.parse(row.platformSpecificPayload) : {},
+    };
+
+    const updated = { ...current, ...patch };
+
+    this.db.prepare(`
+      UPDATE post_variants SET
+        socialAccountId = ?, adaptedContent = ?, mediaUrls = ?, platformSpecificPayload = ?,
+        status = ?, externalPostId = ?, publishedAt = ?, errorLog = ?,
+        views = ?, likes = ?, comments = ?, shares = ?
+      WHERE id = ?
+    `).run(
+      updated.socialAccountId || null,
+      updated.adaptedContent,
+      JSON.stringify(updated.mediaUrls || []),
+      JSON.stringify(updated.platformSpecificPayload || {}),
+      updated.status,
+      updated.externalPostId || null,
+      updated.publishedAt || null,
+      updated.errorLog || null,
+      updated.views ?? 0,
+      updated.likes ?? 0,
+      updated.comments ?? 0,
+      updated.shares ?? 0,
+      id
+    );
+
+    const reloaded = this.db.prepare("SELECT * FROM post_variants WHERE id = ?").get(id) as any;
+    return {
+      ...reloaded,
+      mediaUrls: reloaded.mediaUrls ? JSON.parse(reloaded.mediaUrls) : [],
+      platformSpecificPayload: reloaded.platformSpecificPayload ? JSON.parse(reloaded.platformSpecificPayload) : {},
+      socialAccount: this.getAccountById(reloaded.socialAccountId) || null,
+    };
   }
 
   createPost(data: {
@@ -304,49 +458,280 @@ class MockDatabase {
   }): DBMasterPost {
     const postId = `post-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const nowIso = new Date().toISOString();
+    const ws = this.getWorkspace();
+
+    const initialStatus = data.publishNow
+      ? PostStatus.QUEUED
+      : data.scheduledAt
+      ? PostStatus.QUEUED
+      : PostStatus.DRAFT;
+
+    const insertPost = this.db.prepare(`
+      INSERT INTO master_posts (
+        id, workspaceId, authorId, title, rawCaption, rawMediaUrls, scheduledAt, publishedAt, status, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    insertPost.run(
+      postId,
+      ws.id,
+      "usr-admin-01",
+      data.title || "Chiến dịch Mạng Xã Hội",
+      data.caption,
+      JSON.stringify(data.mediaUrls || []),
+      data.scheduledAt,
+      null,
+      initialStatus,
+      nowIso,
+      nowIso
+    );
+
+    const insertVariant = this.db.prepare(`
+      INSERT INTO post_variants (
+        id, masterPostId, socialAccountId, platform, adaptedContent, mediaUrls, platformSpecificPayload,
+        status, externalPostId, publishedAt, errorLog, views, likes, comments, shares
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
 
     const createdVariants: DBPostVariant[] = data.variants.map((v) => {
       const acc = this.getAccountByPlatform(v.platform);
+      const varId = `var-${Date.now()}-${v.platform}`;
+
+      const varStatus = data.publishNow
+        ? VariantStatus.PENDING
+        : data.scheduledAt
+        ? VariantStatus.QUEUED
+        : VariantStatus.PENDING;
+
+      insertVariant.run(
+        varId,
+        postId,
+        acc ? acc.id : null,
+        v.platform,
+        v.adaptedContent,
+        JSON.stringify(v.mediaUrls && v.mediaUrls.length > 0 ? v.mediaUrls : data.mediaUrls),
+        JSON.stringify(v.options || {}),
+        varStatus,
+        null,
+        null,
+        null,
+        0, // Real metrics start strictly at 0
+        0,
+        0,
+        0
+      );
+
       return {
-        id: `var-${Date.now()}-${v.platform}`,
+        id: varId,
         masterPostId: postId,
         socialAccountId: acc ? acc.id : null,
         platform: v.platform,
         adaptedContent: v.adaptedContent,
-        mediaUrls: v.mediaUrls.length > 0 ? v.mediaUrls : data.mediaUrls,
+        mediaUrls: v.mediaUrls && v.mediaUrls.length > 0 ? v.mediaUrls : data.mediaUrls,
         platformSpecificPayload: v.options || {},
-        status: data.publishNow ? VariantStatus.PUBLISHED : (data.scheduledAt ? VariantStatus.QUEUED : VariantStatus.PENDING),
-        externalPostId: data.publishNow ? `sim_${v.platform.toLowerCase()}_${Date.now()}` : null,
-        publishedAt: data.publishNow ? nowIso : null,
+        status: varStatus,
+        externalPostId: null,
+        publishedAt: null,
         errorLog: null,
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
         socialAccount: acc || null,
       };
     });
 
-    const newPost: DBMasterPost = {
+    return {
       id: postId,
-      workspaceId: this.workspace.id,
-      authorId: "usr-alex-01",
-      title: data.title || "Untitled Master Post",
+      workspaceId: ws.id,
+      authorId: "usr-admin-01",
+      title: data.title || "Chiến dịch Mạng Xã Hội",
       rawCaption: data.caption,
       rawMediaUrls: data.mediaUrls,
       scheduledAt: data.scheduledAt,
-      publishedAt: data.publishNow ? nowIso : null,
-      status: data.publishNow ? PostStatus.PUBLISHED : (data.scheduledAt ? PostStatus.QUEUED : PostStatus.DRAFT),
+      publishedAt: null,
+      status: initialStatus,
       createdAt: nowIso,
       updatedAt: nowIso,
       variants: createdVariants,
     };
-
-    this.posts.unshift(newPost);
-    return newPost;
   }
 
   deletePost(id: string) {
-    this.posts = this.posts.filter((p) => p.id !== id);
+    this.db.prepare("DELETE FROM post_variants WHERE masterPostId = ?").run(id);
+    this.db.prepare("DELETE FROM master_posts WHERE id = ?").run(id);
+  }
+
+  // Get flat list of all published/queued variant records for the Records tab
+  getAllVariantRecords(): Array<{
+    id: string;
+    masterPostId: string;
+    postTitle: string;
+    rawCaption: string;
+    scheduledAt: string | null;
+    createdAt: string;
+    platform: Platform;
+    accountName: string;
+    username: string;
+    adaptedContent: string;
+    mediaUrl: string;
+    allMediaUrls: string[];
+    platformSpecificPayload: Record<string, any>;
+    status: VariantStatus;
+    externalPostId: string | null;
+    publishedAt: string | null;
+    views: number;
+    likes: number;
+    comments: number;
+    shares: number;
+  }> {
+    const rows = this.db.prepare(`
+      SELECT 
+        v.id,
+        v.masterPostId,
+        p.title as postTitle,
+        p.rawCaption,
+        p.scheduledAt,
+        p.createdAt,
+        v.platform,
+        COALESCE(a.accountName, 'Mặc định') as accountName,
+        COALESCE(a.username, 'omni') as username,
+        v.adaptedContent,
+        v.mediaUrls,
+        v.platformSpecificPayload,
+        v.status,
+        v.externalPostId,
+        v.publishedAt,
+        v.errorLog,
+        v.views,
+        v.likes,
+        v.comments,
+        v.shares
+      FROM post_variants v
+      JOIN master_posts p ON v.masterPostId = p.id
+      LEFT JOIN social_accounts a ON v.socialAccountId = a.id
+      ORDER BY COALESCE(v.publishedAt, p.createdAt) DESC
+    `).all() as any[];
+
+    return rows.map((r) => {
+      let firstMedia = "";
+      let parsedMediaList: string[] = [];
+      try {
+        const parsed = JSON.parse(r.mediaUrls);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          firstMedia = parsed[0];
+          parsedMediaList = parsed;
+        }
+      } catch (e) {}
+
+      let payload: Record<string, any> = {};
+      try {
+        if (r.platformSpecificPayload) {
+          payload = JSON.parse(r.platformSpecificPayload);
+        }
+      } catch (e) {}
+
+      return {
+        id: r.id,
+        masterPostId: r.masterPostId,
+        postTitle: r.postTitle,
+        rawCaption: r.rawCaption || "",
+        scheduledAt: r.scheduledAt,
+        createdAt: r.createdAt,
+        platform: r.platform as Platform,
+        accountName: r.accountName,
+        username: r.username,
+        adaptedContent: r.adaptedContent,
+        mediaUrl: firstMedia,
+        allMediaUrls: parsedMediaList,
+        platformSpecificPayload: payload,
+        status: r.status as VariantStatus,
+        externalPostId: r.externalPostId,
+        publishedAt: r.publishedAt,
+        errorLog: r.errorLog || null,
+        views: r.views || 0,
+        likes: r.likes || 0,
+        comments: r.comments || 0,
+        shares: r.shares || 0,
+      };
+    });
+  }
+
+  getAnalyticsSummary() {
+    const totals = this.db.prepare(`
+      SELECT 
+        COALESCE(SUM(views), 0) as views,
+        COALESCE(SUM(likes), 0) as likes,
+        COALESCE(SUM(comments), 0) as comments,
+        COALESCE(SUM(shares), 0) as shares
+      FROM post_variants
+      WHERE status = 'PUBLISHED'
+    `).get() as any;
+
+    const totalViews = Number(totals.views || 0);
+    const totalLikes = Number(totals.likes || 0);
+    const totalComments = Number(totals.comments || 0);
+    const totalShares = Number(totals.shares || 0);
+
+    const totalReach = Math.round(totalViews * 0.72);
+    const totalImpressions = Math.round(totalViews * 1.35);
+
+    const postCounts = this.db.prepare(`
+      SELECT 
+        COUNT(*) as totalPosts,
+        SUM(CASE WHEN status = 'PUBLISHED' THEN 1 ELSE 0 END) as publishedCount,
+        SUM(CASE WHEN status = 'QUEUED' THEN 1 ELSE 0 END) as queuedCount
+      FROM master_posts
+    `).get() as any;
+
+    const platformGroup = this.db.prepare(`
+      SELECT 
+        platform,
+        COALESCE(SUM(views), 0) as views,
+        COUNT(*) as posts
+      FROM post_variants
+      WHERE status = 'PUBLISHED'
+      GROUP BY platform
+    `).all() as any[];
+
+    const colors: Record<string, string> = {
+      YOUTUBE: "#ef4444",
+      TIKTOK: "#06b6d4",
+      INSTAGRAM: "#ec4899",
+      FACEBOOK: "#2563eb",
+      TWITTER: "#38bdf8",
+      THREADS: "#a855f7",
+      PINTEREST: "#f43f5e",
+    };
+
+    const platformDistribution = platformGroup.map((pg) => {
+      const v = Number(pg.views || 0);
+      const share = totalViews > 0 ? Math.round((v / totalViews) * 100) : 0;
+      return {
+        platform: pg.platform,
+        views: v,
+        share,
+        color: colors[pg.platform] || "#6b7280",
+      };
+    }).sort((a, b) => b.share - a.share);
+
+    return {
+      totals: {
+        views: totalViews,
+        reach: totalReach,
+        impressions: totalImpressions,
+        likes: totalLikes,
+        comments: totalComments,
+        shares: totalShares,
+      },
+      publishedCount: postCounts.publishedCount || 0,
+      queuedCount: postCounts.queuedCount || 0,
+      totalPosts: postCounts.totalPosts || 0,
+      platformDistribution,
+    };
   }
 }
 
-const globalForMock = globalThis as unknown as { mockDB?: MockDatabase };
-export const mockDB = globalForMock.mockDB || new MockDatabase();
+const globalForMock = globalThis as unknown as { mockDB?: SQLiteDatabase };
+export const mockDB = new SQLiteDatabase();
 if (process.env.NODE_ENV !== "production") globalForMock.mockDB = mockDB;

@@ -14,7 +14,8 @@ import {
   CheckCircle2, 
   ChevronDown,
   Layers,
-  Sparkles
+  Sparkles,
+  History
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -23,10 +24,23 @@ const NAV_ITEMS = [
   { name: "Content Calendar", href: "/calendar", icon: CalendarDays },
   { name: "Analytics Central", href: "/analytics", icon: BarChart3 },
   { name: "Accounts & API Hub", href: "/accounts", icon: Radio },
+  { name: "Post Records", href: "/records", icon: History, badge: "Live" },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [accountCount, setAccountCount] = React.useState(0);
+  const [workspaceName, setWorkspaceName] = React.useState("Affiliate Media Studio");
+
+  React.useEffect(() => {
+    fetch("/api/accounts")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.workspace?.name) setWorkspaceName(data.workspace.name);
+        if (data.accounts) setAccountCount(data.accounts.length);
+      })
+      .catch(() => {});
+  }, [pathname]);
 
   return (
     <aside className="w-64 border-r border-zinc-800/80 bg-zinc-950/70 backdrop-blur-xl flex flex-col justify-between h-screen fixed left-0 top-0 z-40">
@@ -54,8 +68,8 @@ export function Sidebar() {
                 A
               </div>
               <div className="truncate">
-                <div className="text-xs font-medium text-zinc-200 truncate">Acme Media & Co</div>
-                <div className="text-[10px] text-zinc-500">6 connected accounts</div>
+                <div className="text-xs font-medium text-zinc-200 truncate">{workspaceName}</div>
+                <div className="text-[10px] text-zinc-500">{accountCount} connected accounts</div>
               </div>
             </div>
             <ChevronDown className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300" />

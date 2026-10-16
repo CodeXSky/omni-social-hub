@@ -32,26 +32,22 @@ export function AnalyticsCentral() {
   }, []);
 
   const stats = analytics?.stats?.totals || {
-    views: 142800,
-    reach: 98500,
-    impressions: 185400,
-    likes: 12840,
-    comments: 2190,
-    shares: 1820,
+    views: 0,
+    reach: 0,
+    impressions: 0,
+    likes: 0,
+    comments: 0,
+    shares: 0,
   };
 
+  const platformDist = analytics?.platformDistribution || [];
+
   const handleExportCSV = () => {
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [
-        "Platform,Impressions,Reach,EngagementRate,Shares,CTR",
-        "TikTok,81570,45200,5.8%,3800,4.2%",
-        "Instagram,48200,32100,6.2%,1400,6.8%",
-        "Facebook,25950,18500,2.9%,920,3.1%",
-        "Twitter / X,18540,14200,3.4%,1800,2.9%",
-        "Threads,7410,5900,4.1%,450,5.4%",
-        "Pinterest,3700,2800,7.1%,280,8.2%",
-      ].join("\n");
+    const csvRows = [
+      "Platform,Views,SharePercent",
+      ...platformDist.map((p: any) => `${p.platform},${p.views || 0},${p.share}%`),
+    ];
+    const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -78,7 +74,7 @@ export function AnalyticsCentral() {
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight">Analytics Central</h1>
           <p className="text-xs text-zinc-400 mt-1">
-            Deep performance metrics across Meta Graph, TikTok v2, X v2, Threads, and Pinterest.
+            Deep performance metrics calculated from live posts published across YouTube, TikTok, Meta & X.
           </p>
         </div>
 
@@ -118,12 +114,12 @@ export function AnalyticsCentral() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
-        <MiniKpi title="Impressions" value={stats.impressions.toLocaleString()} change="+19.2%" />
-        <MiniKpi title="Total Reach" value={stats.reach.toLocaleString()} change="+14.5%" />
-        <MiniKpi title="Video Plays" value={stats.views.toLocaleString()} change="+28.4%" />
-        <MiniKpi title="Total Likes" value={stats.likes.toLocaleString()} change="+8.1%" />
-        <MiniKpi title="Comments" value={stats.comments.toLocaleString()} change="+11.0%" />
-        <MiniKpi title="Re-shares / Retweets" value={stats.shares.toLocaleString()} change="+31.2%" />
+        <MiniKpi title="Impressions" value={stats.impressions.toLocaleString()} change={stats.impressions > 0 ? "Hiển thị" : "0"} />
+        <MiniKpi title="Total Reach" value={stats.reach.toLocaleString()} change={stats.reach > 0 ? "Tiếp cận" : "0"} />
+        <MiniKpi title="Video Plays" value={stats.views.toLocaleString()} change={stats.views > 0 ? "Lượt xem" : "0"} />
+        <MiniKpi title="Total Likes" value={stats.likes.toLocaleString()} change={stats.likes > 0 ? "Lượt thích" : "0"} />
+        <MiniKpi title="Comments" value={stats.comments.toLocaleString()} change={stats.comments > 0 ? "Bình luận" : "0"} />
+        <MiniKpi title="Re-shares / Retweets" value={stats.shares.toLocaleString()} change={stats.shares > 0 ? "Chia sẻ" : "0"} />
       </div>
 
       {/* Cross-Platform Performance Breakdown */}
@@ -132,35 +128,48 @@ export function AnalyticsCentral() {
         <div className="lg:col-span-7 bg-zinc-900/60 border border-zinc-800/80 rounded-2xl p-6 backdrop-blur-xl space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-zinc-800/60">
             <div>
-              <h2 className="text-sm font-bold text-zinc-100">Platform Distribution of Reach</h2>
-              <p className="text-xs text-zinc-500 mt-0.5">Where your organic audience is concentrated</p>
+              <h2 className="text-sm font-bold text-zinc-100">Live Platform Distribution of Views</h2>
+              <p className="text-xs text-zinc-500 mt-0.5">Calculated dynamically from published campaign variants</p>
             </div>
-            <span className="text-xs text-cyan-400 font-mono">100% Normalized</span>
+            <span className="text-xs text-cyan-400 font-mono">Real Dynamic Share</span>
           </div>
 
           <div className="space-y-4">
-            {[
-              { name: "TikTok", share: 44, color: "bg-cyan-400", impressions: "81,570 plays", ctr: "4.2%" },
-              { name: "Instagram", share: 26, color: "bg-pink-500", impressions: "48,200 views", ctr: "6.8%" },
-              { name: "Facebook", share: 14, color: "bg-blue-600", impressions: "25,950 views", ctr: "3.1%" },
-              { name: "X (Twitter)", share: 10, color: "bg-sky-400", impressions: "18,540 views", ctr: "2.9%" },
-              { name: "Threads", share: 4, color: "bg-purple-500", impressions: "7,410 views", ctr: "5.4%" },
-              { name: "Pinterest", share: 2, color: "bg-rose-500", impressions: "3,700 views", ctr: "8.2%" },
-            ].map((p, idx) => (
-              <div key={idx} className="space-y-1.5">
-                <div className="flex justify-between text-xs">
-                  <span className="font-semibold text-zinc-200">{p.name}</span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-zinc-400 font-mono">{p.impressions}</span>
-                    <span className="text-emerald-400 font-mono font-bold">{p.ctr} CTR</span>
-                    <span className="text-zinc-300 font-mono w-10 text-right">{p.share}%</span>
+            {platformDist.length === 0 ? (
+              <div className="py-8 text-center text-zinc-500 text-xs">
+                Chưa có dữ liệu phân bổ nền tảng. Các chỉ số sẽ tự động xuất hiện khi có bài đăng được xuất bản.
+              </div>
+            ) : (
+              platformDist.map((p: any, idx: number) => {
+              const cfg = PLATFORM_CONFIGS[p.platform as Platform] || PLATFORM_CONFIGS.TWITTER;
+              const colorBgMap: Record<string, string> = {
+                YOUTUBE: "bg-red-500",
+                TIKTOK: "bg-cyan-400",
+                INSTAGRAM: "bg-pink-500",
+                FACEBOOK: "bg-blue-600",
+                TWITTER: "bg-sky-400",
+                THREADS: "bg-purple-500",
+                PINTEREST: "bg-rose-500",
+              };
+
+              return (
+                <div key={idx} className="space-y-1.5">
+                  <div className="flex justify-between text-xs">
+                    <span className="font-semibold text-zinc-200">{cfg.name}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-zinc-400 font-mono">{(p.views || 0).toLocaleString()} views</span>
+                      <span className="text-emerald-400 font-mono font-bold">{p.share}%</span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-zinc-800 h-2.5 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${colorBgMap[p.platform] || "bg-cyan-400"} rounded-full transition-all duration-1000`}
+                      style={{ width: `${Math.max(4, p.share)}%` }}
+                    />
                   </div>
                 </div>
-                <div className="w-full bg-zinc-800 h-2.5 rounded-full overflow-hidden">
-                  <div className={`h-full ${p.color} rounded-full`} style={{ width: `${p.share}%` }} />
-                </div>
-              </div>
-            ))}
+              );
+            }))}
           </div>
         </div>
 
@@ -169,14 +178,14 @@ export function AnalyticsCentral() {
           <div>
             <div className="pb-3 border-b border-zinc-800/60">
               <h2 className="text-sm font-bold text-zinc-100">Best Time to Post (AI Heatmap)</h2>
-              <p className="text-xs text-zinc-500 mt-0.5">Optimized for maximum 30-minute viral velocity</p>
+              <p className="text-xs text-zinc-500 mt-0.5">Optimized for maximum 30-minute viral velocity (Vietnam GMT+7)</p>
             </div>
 
             <div className="space-y-3 mt-4">
               {[
-                { time: "09:00 AM - 10:30 AM", target: "TikTok & Threads", score: "98% Peak" },
-                { time: "01:00 PM - 02:30 PM", target: "X & LinkedIn / Facebook", score: "92% Peak" },
-                { time: "06:30 PM - 08:30 PM", target: "Instagram & Pinterest", score: "95% Peak" },
+                { time: "11:30 AM - 01:00 PM", target: "TikTok & Shorts (Giờ nghỉ trưa)", score: "98% Peak" },
+                { time: "07:30 PM - 09:30 PM", target: "Facebook Reels & Instagram (Tối)", score: "96% Peak" },
+                { time: "09:30 PM - 11:00 PM", target: "TikTok Shop & Threads (Săn sale đêm)", score: "94% Peak" },
               ].map((slot, i) => (
                 <div
                   key={i}
@@ -200,7 +209,7 @@ export function AnalyticsCentral() {
               <span>AI Automated Insight</span>
             </div>
             <p className="text-[11px] text-violet-300/80 leading-relaxed">
-              Video variants with short opening hooks under 3 seconds generated 3.4x higher completion rates on TikTok and Instagram Reels this month.
+              Các video review gắn trực tiếp liên kết affiliate và giỏ hàng vàng trong 3 giây đầu tiên giúp tăng tỷ lệ chuyển đổi đơn hàng lên 3.8 lần so với chỉ để link ở bio.
             </p>
           </div>
         </div>

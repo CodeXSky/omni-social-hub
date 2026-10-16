@@ -5,6 +5,17 @@ import Link from "next/link";
 import { Bell, Search, Plus, Radio, Zap, ShieldCheck } from "lucide-react";
 
 export function Header() {
+  React.useEffect(() => {
+    // Automatic Background Cron: checks every 30s for scheduled posts due to publish
+    fetch("/api/cron/publisher").catch(() => {});
+
+    const interval = setInterval(() => {
+      fetch("/api/cron/publisher").catch(() => {});
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <header className="h-16 border-b border-zinc-800/80 bg-zinc-950/70 backdrop-blur-xl px-8 flex items-center justify-between sticky top-0 z-30 ml-64">
       {/* Search Bar */}
@@ -44,11 +55,11 @@ export function Header() {
         {/* User Avatar */}
         <div className="flex items-center gap-2.5 pl-2 border-l border-zinc-800">
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center text-xs font-bold text-white ring-2 ring-zinc-800">
-            AD
+            WS
           </div>
           <div className="text-left hidden md:block">
-            <div className="text-xs font-medium text-zinc-200 leading-tight">Alex Director</div>
-            <div className="text-[10px] text-zinc-500">Brand Lead</div>
+            <div className="text-xs font-medium text-zinc-200 leading-tight">Workspace Admin</div>
+            <div className="text-[10px] text-zinc-500">Owner</div>
           </div>
         </div>
       </div>

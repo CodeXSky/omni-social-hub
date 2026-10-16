@@ -82,10 +82,9 @@ const ALL_PLATFORMS: Platform[] = [
   Platform.PINTEREST,
 ];
 
-const INITIAL_MASTER_CAPTION =
-  "We just rolled out the all-new OmniSocial Hub 2.0 with instant cross-platform AI adaptation and Google Drive video stream integration! Schedule to YouTube Shorts, TikTok, Instagram Reels, Facebook, and X in one click.";
+const INITIAL_MASTER_CAPTION = "";
 
-const DEFAULT_GDRIVE_SAMPLE = "https://drive.google.com/file/d/1A2B3C4D5E6F7G8H9I0J_SAMPLE_VIDEO/view?usp=sharing";
+const DEFAULT_GDRIVE_SAMPLE = "";
 
 const makeDefaultVariants = (caption: string, mediaUrls: string[]): Record<Platform, VariantDraft> => {
   const map = {} as Record<Platform, VariantDraft>;
@@ -93,7 +92,7 @@ const makeDefaultVariants = (caption: string, mediaUrls: string[]): Record<Platf
     map[p] = {
       platform: p,
       caption: caption,
-      hashtags: ["#SocialMedia", "#OmniChannel", "#Productivity", "#Shorts", "#Affiliate"],
+      hashtags: [],
       mediaUrls: [...mediaUrls],
       options: {},
       isManuallyEdited: false,
@@ -103,36 +102,26 @@ const makeDefaultVariants = (caption: string, mediaUrls: string[]): Record<Platf
 };
 
 export const useComposerStore = create<ComposerState>((set, get) => ({
-  masterTitle: "OmniSocial Hub 2.0 Launch & Video Walkthrough",
+  masterTitle: "",
   masterCaption: INITIAL_MASTER_CAPTION,
-  masterMediaUrls: [
-    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
-  ],
+  masterMediaUrls: [],
   googleDriveVideoUrl: DEFAULT_GDRIVE_SAMPLE,
-  isGoogleDriveConverted: true,
+  isGoogleDriveConverted: false,
   scheduledAt: null,
   tone: "viral_edgy",
   selectedPlatforms: [...ALL_PLATFORMS],
 
   // Product & Affiliate state
-  affiliateProductUrl: "https://omnisocial.io/product/pro-edition",
-  affiliateLink: "https://omnisocial.io/ref/vip-partner",
-  affiliateProductName: "OmniSocial Hub Pro",
-  fetchedProduct: {
-    url: "https://omnisocial.io/product/pro-edition",
-    title: "OmniSocial Hub Pro Edition - All-in-One Multi-Channel Management",
-    description: "Streamline multi-platform posting to YouTube, TikTok, and Instagram with AI automation.",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&auto=format&fit=crop&q=80",
-    brand: "OmniSocial",
-  },
+  affiliateProductUrl: "",
+  affiliateLink: "",
+  affiliateProductName: "",
+  fetchedProduct: null,
   isFetchingProduct: false,
 
-  currentTrendingTopic: "Autonomous AI Agents & Omni-Channel Automation",
-  trendingUrgency: "EXPLODING 🔥",
+  currentTrendingTopic: "",
+  trendingUrgency: "",
   activeVariantTab: Platform.YOUTUBE,
-  variants: makeDefaultVariants(INITIAL_MASTER_CAPTION, [
-    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
-  ]),
+  variants: makeDefaultVariants(INITIAL_MASTER_CAPTION, []),
   isAdapting: false,
   isPublishing: false,
 
@@ -236,7 +225,15 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
       masterTitle: "",
       masterCaption: "",
       masterMediaUrls: [],
+      googleDriveVideoUrl: "",
+      isGoogleDriveConverted: false,
       scheduledAt: null,
+      affiliateProductUrl: "",
+      affiliateLink: "",
+      affiliateProductName: "",
+      fetchedProduct: null,
+      currentTrendingTopic: "",
+      trendingUrgency: "",
       variants: makeDefaultVariants("", []),
     }),
 }));

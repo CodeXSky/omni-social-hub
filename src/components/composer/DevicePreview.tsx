@@ -409,7 +409,7 @@ function YouTubeMockup({
             <div className="w-7 h-7 rounded-full bg-red-600 flex items-center justify-center font-bold text-[10px]">
               YT
             </div>
-            <span className="font-bold text-xs">@AcmeCreatorOfficial</span>
+            <span className="font-bold text-xs">@YourChannel</span>
           </div>
           <button className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-full text-[11px] font-bold">
             Subscribe
@@ -572,7 +572,7 @@ function TikTokMockup({
         {/* Caption & Music Sound */}
         <div className="px-3.5 pb-2 text-white space-y-1 max-w-[265px]">
           <div className="flex items-center gap-1.5">
-            <span className="font-bold text-xs tracking-wide">@khong_biet_la_ai</span>
+            <span className="font-bold text-xs tracking-wide">@YourChannel</span>
             <BadgeCheck className="w-3.5 h-3.5 text-[#20D5EC] fill-[#20D5EC]" />
             {gdriveInfo?.isGoogleDrive && (
               <span className="text-[8px] px-1.5 py-0.2 rounded bg-blue-500/40 text-blue-200 font-mono font-bold">
@@ -732,7 +732,7 @@ function InstagramMockup({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80" alt="Avatar" className="w-full h-full rounded-full object-cover border border-black" />
           </div>
-          <span className="text-xs font-bold tracking-tight">acme.official</span>
+          <span className="text-xs font-bold tracking-tight">@your_channel</span>
           <button className="px-2.5 py-0.5 rounded-md border border-white/60 text-[10px] font-semibold text-white hover:bg-white/10 transition-colors">
             Follow
           </button>
@@ -745,7 +745,7 @@ function InstagramMockup({
         {/* Audio tag */}
         <div className="flex items-center gap-1.5 text-[10px] text-zinc-200">
           <Music2 className="w-3 h-3" />
-          <span className="truncate">acme.official • Original audio</span>
+          <span className="truncate">your_channel • Original audio</span>
         </div>
       </div>
     </div>
@@ -767,9 +767,9 @@ function TwitterMockup({ caption, media, options }: { caption: string; media: st
         <div className="flex-1 space-y-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-bold text-zinc-100">Acme Hub</span>
+              <span className="text-xs font-bold text-zinc-100">Your Channel</span>
               <BadgeCheck className="w-3.5 h-3.5 text-sky-400 fill-sky-400" />
-              <span className="text-[11px] text-zinc-500">@AcmeHub · 12m</span>
+              <span className="text-[11px] text-zinc-500">@YourChannel · 12m</span>
             </div>
             <MoreHorizontal className="w-3.5 h-3.5 text-zinc-500" />
           </div>
@@ -836,7 +836,7 @@ function ThreadsMockup({
         </div>
         <div className="flex-1 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-zinc-100">acme.official</span>
+            <span className="text-xs font-bold text-zinc-100">@your_channel</span>
             <span className="text-[10px] text-zinc-500">45m</span>
           </div>
 
@@ -1014,7 +1014,7 @@ function FacebookMockup({
             <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80" alt="Avatar" className="w-full h-full object-cover" />
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold tracking-tight">Acme Global</span>
+            <span className="text-xs font-bold tracking-tight">Your Channel</span>
             <BadgeCheck className="w-3.5 h-3.5 text-[#1877F2] fill-[#1877F2]" />
           </div>
           <button className="px-2.5 py-0.5 rounded-full bg-[#1877F2] hover:bg-blue-600 text-[10px] font-bold text-white shadow-sm transition-colors">
@@ -1029,7 +1029,7 @@ function FacebookMockup({
         {/* Audio tag */}
         <div className="flex items-center gap-1.5 text-[10px] text-zinc-200">
           <Music2 className="w-3 h-3" />
-          <span className="truncate">Âm thanh gốc • Acme Global Official</span>
+          <span className="truncate">Âm thanh gốc • Kênh của bạn</span>
         </div>
       </div>
     </div>
@@ -1068,7 +1068,7 @@ function PinterestMockup({ caption, media, options }: { caption: string; media: 
           <div className="w-4 h-4 rounded-full bg-rose-600 flex items-center justify-center text-[9px] font-bold text-white">
             P
           </div>
-          <span>Acme Design Boards</span>
+          <span>Bảng ghim sáng tạo</span>
         </div>
       </div>
     </div>
